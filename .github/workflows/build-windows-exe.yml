@@ -26,7 +26,8 @@ jobs:
 
       - name: Build EXE
         run: |
-          pyinstaller --onefile --name LLM_Bundler launcher.py
+          pyinstaller --onefile --name LLM_Bundler --collect-all streamlit --add-data "app.py;." --add-data "extractors;extractors" --add-data "processing;processing" --add-data "storage;storage" launcher.py
+
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4

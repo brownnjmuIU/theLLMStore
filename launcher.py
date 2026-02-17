@@ -1,40 +1,30 @@
-import subprocess
+import os
 import sys
-import time
+import threading
 import webbrowser
-import urllib.request
 from pathlib import Path
 
-URL = "http://localhost:8501"
-APP_PATH = str(Path(__file__).resolve().parent / "app.py")
+import streamlit.web.bootstrap as bootstrap
 
-def wait_for_server(url: str, timeout: int = 30) -> bool:
-    start = time.time()
-    while time.time() - start < timeout:
-        try:
-            with urllib.request.urlopen(url, timeout=1):
-                return True
-        except Exception:
-            time.sleep(0.5)
-    return False
+URL = "http://localhost:8501"
+
+
+def resource_path(rel_path: str) -> Path:
+    base = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parent))
+    return base / rel_path
+
 
 def main() -> None:
-    proc = subprocess.Popen([
-        sys.executable, "-m", "streamlit", "run", APP_PATH,
-        "--server.headless=true",
-        "--browser.gatherUsageStats=false",
-        "--server.fileWatcherType=none",
-    ])
+    app_path = resource_path("app.py")
+    app_dir = app_path.parent
 
-    if wait_for_server(URL, timeout=30):
-        webbrowser.open(URL)
-    else:
-        print("Streamlit did not start within 30 seconds.")
+    if str(app_dir) not in sys.path:
+        sys.path.insert(0, str(app_dir))
+    os.chdir(app_dir)
 
-    try:
-        proc.wait()
-    except KeyboardInterrupt:
-        proc.terminate()
+    threading.Timer(2.0, lambda: webbrowser.open(URL)).start()
+    bootstrap.run(str(app_path), "", [], flag_options={})
+
 
 if __name__ == "__main__":
     main()
