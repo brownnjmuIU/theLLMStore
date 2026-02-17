@@ -23,7 +23,16 @@ def main() -> None:
     os.chdir(app_dir)
 
     threading.Timer(2.0, lambda: webbrowser.open(URL)).start()
-    bootstrap.run(str(app_path), "", [], flag_options={})
+    bootstrap.run(
+        str(app_path),
+        "",
+        [],
+        flag_options={
+            "server.headless": True,
+            "server.port": 8501,
+            "server.address": "localhost",
+        },
+    )
 
 
 if __name__ == "__main__":
