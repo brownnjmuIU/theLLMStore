@@ -57,7 +57,6 @@ def main() -> None:
     from streamlit.web import bootstrap
     bootstrap.run(
         str(app_path),
-        False,
         [],
         flag_options={
             "server.headless": True,

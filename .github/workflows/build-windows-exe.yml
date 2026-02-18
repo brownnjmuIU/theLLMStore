@@ -29,7 +29,8 @@ jobs:
         run: |
           pyinstaller --onedir --name LLM_Bundler `
             --collect-all streamlit `
-            --collect-all PyMuPDF `
+            --collect-all fitz `
+            --collect-all altair `
             --hidden-import streamlit.web.bootstrap `
             --hidden-import streamlit.runtime.scriptrunner `
             --hidden-import docx `
