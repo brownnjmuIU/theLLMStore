@@ -25,7 +25,19 @@ jobs:
           pip install pyinstaller
 
       - name: Build EXE
-        run: pyinstaller --onedir --name LLM_Bundler --collect-all streamlit --add-data "app.py;." --add-data "extractors;extractors" --add-data "processing;processing" --add-data "storage;storage" launcher.py
+        run: >
+          pyinstaller --onedir --name LLM_Bundler
+          --collect-all streamlit
+          --collect-all langchain_text_splitters
+          --collect-all fitz
+          --collect-all docx
+          --collect-all pptx
+          --add-data "app.py;."
+          --add-data "extractors;extractors"
+          --add-data "processing;processing"
+          --add-data "storage;storage"
+          launcher.py
+
 
 
       - name: Upload artifact

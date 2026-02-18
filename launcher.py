@@ -41,6 +41,7 @@ def main():
 
     proc = subprocess.Popen(cmd)
 
+    # Wait for server ONCE
     if wait_for_server():
         webbrowser.open(URL)
 
