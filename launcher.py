@@ -1,21 +1,16 @@
-import os
+import subprocess
 import sys
 import time
-import threading
 import webbrowser
 import urllib.request
 from pathlib import Path
 
-import streamlit.web.bootstrap as bootstrap
-
 PORT = 8501
 URL = f"http://127.0.0.1:{PORT}"
-
 
 def resource_path(rel_path: str) -> Path:
     base = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parent))
     return base / rel_path
-
 
 def wait_for_server(timeout: int = 60) -> bool:
     health_url = f"{URL}/_stcore/health"
@@ -29,34 +24,29 @@ def wait_for_server(timeout: int = 60) -> bool:
             time.sleep(0.5)
     return False
 
+def main():
+    app_path = resource_path("app.py")
 
-def open_browser_when_ready() -> None:
+    cmd = [
+        sys.executable,
+        "-m",
+        "streamlit",
+        "run",
+        str(app_path),
+        "--server.port=8501",
+        "--server.address=127.0.0.1",
+        "--server.headless=true"
+    ]
+
+    proc = subprocess.Popen(cmd)
+
     if wait_for_server():
         webbrowser.open(URL)
 
-
-def main() -> None:
-    app_path = resource_path("app.py")
-    app_dir = app_path.parent
-
-    if str(app_dir) not in sys.path:
-        sys.path.insert(0, str(app_dir))
-    os.chdir(app_dir)
-
-    threading.Thread(target=open_browser_when_ready, daemon=True).start()
-
-    bootstrap.run(
-        str(app_path),
-        "",
-        [],
-        flag_options={
-            "server.headless": True,
-            "server.port": PORT,
-            "server.address": "127.0.0.1",
-            "server.baseUrlPath": "",
-        },
-    )
-
+    try:
+        proc.wait()
+    except KeyboardInterrupt:
+        proc.terminate()
 
 if __name__ == "__main__":
     main()
