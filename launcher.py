@@ -9,7 +9,7 @@ from pathlib import Path
 import streamlit.web.bootstrap as bootstrap
 
 PORT = 8501
-URL = f"http://localhost:{PORT}"
+URL = f"http://127.0.0.1:{PORT}"
 
 
 def resource_path(rel_path: str) -> Path:
@@ -52,7 +52,8 @@ def main() -> None:
         flag_options={
             "server.headless": True,
             "server.port": PORT,
-            "server.address": "localhost",
+            "server.address": "127.0.0.1",
+            "server.baseUrlPath": "",
         },
     )
 
