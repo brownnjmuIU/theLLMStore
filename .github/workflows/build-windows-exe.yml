@@ -24,21 +24,22 @@ jobs:
           pip install -r requirements.txt
           pip install pyinstaller
 
-      - name: Build EXE
-        run: >
-          pyinstaller --onedir --name LLM_Bundler
-          --collect-all streamlit
-          --collect-all langchain_text_splitters
-          --collect-all fitz
-          --collect-all docx
-          --collect-all pptx
-          --add-data "app.py;."
-          --add-data "extractors;extractors"
-          --add-data "processing;processing"
-          --add-data "storage;storage"
-          launcher.py
-
-
+      - name: Build (onedir)
+        shell: pwsh
+        run: |
+          pyinstaller --onedir --name LLM_Bundler `
+            --collect-all streamlit `
+            --hidden-import streamlit.web.bootstrap `
+            --hidden-import streamlit.runtime.scriptrunner `
+            --hidden-import fitz `
+            --hidden-import docx `
+            --hidden-import pptx `
+            --hidden-import langchain_text_splitters `
+            --add-data "app.py;." `
+            --add-data "extractors;extractors" `
+            --add-data "processing;processing" `
+            --add-data "storage;storage" `
+            launcher.py
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
