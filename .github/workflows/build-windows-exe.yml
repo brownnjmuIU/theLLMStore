@@ -29,12 +29,12 @@ jobs:
         run: |
           pyinstaller --onedir --name LLM_Bundler `
             --collect-all streamlit `
+            --collect-all PyMuPDF `
             --hidden-import streamlit.web.bootstrap `
             --hidden-import streamlit.runtime.scriptrunner `
-            --hidden-import fitz `
             --hidden-import docx `
             --hidden-import pptx `
-            --hidden-import langchain_text_splitters `
+            --collect-all langchain_text_splitters `
             --add-data "app.py;." `
             --add-data "extractors;extractors" `
             --add-data "processing;processing" `

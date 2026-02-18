@@ -9,9 +9,14 @@ from pathlib import Path
 PORT = 8501
 URL = f"http://127.0.0.1:{PORT}"
 
+opened = False
+
 
 def resource_path(rel_path: str) -> Path:
-    base = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parent))
+    if getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):
+        base = Path(sys._MEIPASS)
+    else:
+        base = Path(__file__).resolve().parent
     return base / rel_path
 
 
@@ -20,7 +25,7 @@ def wait_for_server(timeout: int = 60) -> bool:
     start = time.time()
     while time.time() - start < timeout:
         try:
-            with urllib.request.urlopen(health_url, timeout=1) as resp:
+            with urllib.request.urlopen(health_url, timeout=2) as resp:
                 if resp.status == 200:
                     return True
         except Exception:
@@ -29,8 +34,14 @@ def wait_for_server(timeout: int = 60) -> bool:
 
 
 def open_browser_when_ready() -> None:
-    if wait_for_server():
+    global opened
+    if opened:
+        return
+    if wait_for_server(timeout=60):
+        opened = True
         webbrowser.open(URL)
+    else:
+        print(f"Server did not become ready at {URL} within timeout.")
 
 
 def main() -> None:
@@ -46,7 +57,7 @@ def main() -> None:
     from streamlit.web import bootstrap
     bootstrap.run(
         str(app_path),
-        "",
+        False,
         [],
         flag_options={
             "server.headless": True,
