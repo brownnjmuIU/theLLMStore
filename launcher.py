@@ -35,7 +35,8 @@ def main():
         str(app_path),
         "--server.port=8501",
         "--server.address=127.0.0.1",
-        "--server.headless=true"
+        "--server.headless=true",
+        "--server.baseUrlPath="
     ]
 
     proc = subprocess.Popen(cmd)
