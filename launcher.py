@@ -1,6 +1,7 @@
 import os
 import sys
 import time
+import subprocess
 import threading
 import webbrowser
 import urllib.request
@@ -46,26 +47,22 @@ def open_browser_when_ready() -> None:
 
 def main() -> None:
     app_path = resource_path("app.py")
-    app_dir = app_path.parent
-
-    if str(app_dir) not in sys.path:
-        sys.path.insert(0, str(app_dir))
-    os.chdir(app_dir)
 
     threading.Thread(target=open_browser_when_ready, daemon=True).start()
 
-    from streamlit.web import bootstrap
-    bootstrap.run(
-        str(app_path),
-        [],
-        flag_options={
-            "server.headless": True,
-            "server.port": PORT,
-            "server.address": "127.0.0.1",
-            "server.baseUrlPath": "",
-            "server.fileWatcherType": "none",
-        },
+    proc = subprocess.Popen(
+        [
+            sys.executable,
+            "-m", "streamlit",
+            "run", str(app_path),
+            "--server.headless=true",
+            f"--server.port={PORT}",
+            "--server.address=127.0.0.1",
+            "--server.fileWatcherType=none",
+        ],
+        cwd=str(app_path.parent),
     )
+    proc.wait()
 
 
 if __name__ == "__main__":
