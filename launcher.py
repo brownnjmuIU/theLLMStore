@@ -52,6 +52,10 @@ def main() -> None:
         sys.path.insert(0, str(app_dir))
     os.chdir(app_dir)
 
+    # Point Streamlit to the bundled config file
+    config_dir = resource_path(".streamlit")
+    os.environ["STREAMLIT_CONFIG_DIR"] = str(config_dir)
+
     threading.Thread(target=open_browser_when_ready, daemon=True).start()
 
     from streamlit.web import bootstrap
@@ -59,14 +63,7 @@ def main() -> None:
         str(app_path),
         False,
         [],
-        flag_options={
-            "global.developmentMode": False,
-            "server.headless": True,
-            "server.port": PORT,
-            "server.address": "127.0.0.1",
-            "server.baseUrlPath": "",
-            "server.fileWatcherType": "none",
-        },
+        flag_options={},
     )
 
 
