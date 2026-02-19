@@ -1,0 +1,35 @@
+name: Build Windows Desktop EXE
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - codex/pyside6-desktop-ui
+
+jobs:
+  build-windows-desktop:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      - name: Build desktop app
+        run: pyinstaller --onedir --name LLM_Bundler_Desktop desktop_app.py
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: LLM_Bundler_Desktop_windows_build
+          path: dist/LLM_Bundler_Desktop
