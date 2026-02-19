@@ -60,6 +60,7 @@ def main() -> None:
         False,
         [],
         flag_options={
+            "global.developmentMode": False,
             "server.headless": True,
             "server.port": PORT,
             "server.address": "127.0.0.1",
