@@ -53,7 +53,9 @@ def main() -> None:
     os.chdir(app_dir)
 
     # Point Streamlit to the bundled config file
-    config_dir = resource_path(".streamlit")
+    # Using "streamlit_config" instead of ".streamlit" as PyInstaller
+    # silently skips dot-folders on Windows
+    config_dir = resource_path("streamlit_config")
     os.environ["STREAMLIT_CONFIG_DIR"] = str(config_dir)
 
     threading.Thread(target=open_browser_when_ready, daemon=True).start()

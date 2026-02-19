@@ -31,6 +31,8 @@ jobs:
           $st_runtime = python -c "import streamlit, os; print(os.path.join(os.path.dirname(streamlit.__file__), 'runtime'))"
           Write-Host "Streamlit static: $st_static"
           Write-Host "Streamlit runtime: $st_runtime"
+          Copy-Item -Path ".streamlit" -Destination "streamlit_config" -Recurse
+          Write-Host "Copied .streamlit to streamlit_config"
           pyinstaller --onedir --name LLM_Bundler `
             --collect-all streamlit `
             --collect-all fitz `
@@ -42,7 +44,7 @@ jobs:
             --collect-all langchain_text_splitters `
             --add-data "$st_static;streamlit/static" `
             --add-data "$st_runtime;streamlit/runtime" `
-            --add-data ".streamlit;.streamlit" `
+            --add-data "streamlit_config;streamlit_config" `
             --add-data "app.py;." `
             --add-data "extractors;extractors" `
             --add-data "processing;processing" `
