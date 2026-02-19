@@ -24,6 +24,12 @@ jobs:
           pip install -r requirements.txt
           pip install pyinstaller
 
+      - name: Find Streamlit static path
+        shell: pwsh
+        run: |
+          $st_path = python -c "import streamlit; import os; print(os.path.dirname(streamlit.__file__))"
+          echo "STREAMLIT_PATH=$st_path" >> $env:GITHUB_ENV
+
       - name: Build (onedir)
         shell: pwsh
         run: |
@@ -36,6 +42,8 @@ jobs:
             --hidden-import docx `
             --hidden-import pptx `
             --collect-all langchain_text_splitters `
+            --add-data "$env:STREAMLIT_PATH/static;streamlit/static" `
+            --add-data "$env:STREAMLIT_PATH/runtime;streamlit/runtime" `
             --add-data "app.py;." `
             --add-data "extractors;extractors" `
             --add-data "processing;processing" `
