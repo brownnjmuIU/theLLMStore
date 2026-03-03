@@ -24,8 +24,12 @@ from PySide6.QtWidgets import (
 )
 
 from extractors.docs_extractor import extract_text_from_docx
+from extractors.image_extractor import extract_text_from_image
+from extractors.browser_extractor import extract_text_from_browser_history
 from extractors.pdf_extractor import extract_text_from_pdf
 from extractors.pptx_extractor import extract_text_from_pptx
+from extractors.platform_extractor import extract_text_from_platform_export
+from extractors.video_extractor import extract_text_from_video
 from processing.pipeline import process_document
 from storage.json_store import get_output_root, save_artifact
 
@@ -444,7 +448,15 @@ class LLMBundlerDesktop(QMainWindow):
             self,
             "Choose file",
             "",
-            "Documents (*.pdf *.docx *.pptx)",
+            (
+                "Supported Files (*.pdf *.docx *.pptx *.jpg *.jpeg *.png *.mp4 *.mov *.json *.sqlite *.db);;"
+                "Documents (*.pdf *.docx *.pptx);;"
+                "Images (*.jpg *.jpeg *.png);;"
+                "Videos (*.mp4 *.mov);;"
+                "Platform Exports (*.json);;"
+                "Browser DBs (*.sqlite *.db);;"
+                "All Files (*)"
+            ),
         )
         if not file_path:
             return
@@ -459,8 +471,18 @@ class LLMBundlerDesktop(QMainWindow):
             return
 
         file_type = self.selected_file.suffix.lower().lstrip(".")
-        if file_type not in {"pdf", "docx", "pptx"}:
-            self._warn("Unsupported file type. Choose PDF, DOCX, or PPTX.")
+        supported_types = {
+            "pdf", "docx", "pptx",
+            "jpg", "jpeg", "png",
+            "mp4", "mov",
+            "json",
+            "sqlite", "db",
+        }
+        if file_type not in supported_types:
+            self._warn(
+                "Unsupported file type. Choose a document, image, video, platform export JSON, "
+                "or browser history DB file."
+            )
             return
 
         self._set_status("● Working…", "working")
@@ -473,8 +495,16 @@ class LLMBundlerDesktop(QMainWindow):
                 result = extract_text_from_pdf(file_bytes)
             elif file_type == "docx":
                 result = extract_text_from_docx(file_bytes)
-            else:
+            elif file_type == "pptx":
                 result = extract_text_from_pptx(file_bytes)
+            elif file_type in {"jpg", "jpeg", "png"}:
+                result = extract_text_from_image(file_bytes)
+            elif file_type in {"mp4", "mov"}:
+                result = extract_text_from_video(file_bytes)
+            elif file_type == "json":
+                result = extract_text_from_platform_export(file_bytes)
+            else:  # sqlite/db
+                result = extract_text_from_browser_history(file_bytes)
 
             self.preview.setPlainText(result["text"][:6000])
             self.chunk_preview.clear()
