@@ -2,3 +2,20 @@
 # Large media
 *.mp4
 *.mov
+
+# Python caches
+__pycache__/
+*.py[cod]
+
+# OS/editor artifacts
+.DS_Store
+
+# SQLite runtime journals
+*.db-journal
+*.sqlite-journal
+*.sqlite-wal
+*.sqlite-shm
+
+# Local-only folders
+Recordings/
+Dummies/
