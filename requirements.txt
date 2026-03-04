@@ -5,3 +5,5 @@ python-pptx
 langchain-text-splitters
 PySide6
 faster-whisper
+pytesseract
+Pillow

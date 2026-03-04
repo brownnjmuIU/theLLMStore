@@ -25,7 +25,10 @@ from PySide6.QtWidgets import (
 
 from extractors.docs_extractor import extract_text_from_docx
 from extractors.image_extractor import extract_text_from_image
-from extractors.browser_extractor import extract_text_from_browser_history
+from extractors.browser_extractor import (
+    extract_text_from_browser_cookies,
+    extract_text_from_browser_history,
+)
 from extractors.pdf_extractor import extract_text_from_pdf
 from extractors.pptx_extractor import extract_text_from_pptx
 from extractors.platform_extractor import extract_text_from_platform_export
@@ -481,7 +484,7 @@ class LLMBundlerDesktop(QMainWindow):
         if file_type not in supported_types:
             self._warn(
                 "Unsupported file type. Choose a document, image, video, platform export JSON, "
-                "or browser history DB file."
+                "or browser history/cookie DB file."
             )
             return
 
@@ -504,7 +507,13 @@ class LLMBundlerDesktop(QMainWindow):
             elif file_type == "json":
                 result = extract_text_from_platform_export(file_bytes)
             else:  # sqlite/db
-                result = extract_text_from_browser_history(file_bytes)
+                db_name = self.selected_file.name.lower()
+                is_cookie_db = "cookie" in db_name
+                if is_cookie_db:
+                    self._log("🔐 Cookie extraction mode: safe metadata only (values excluded).")
+                    result = extract_text_from_browser_cookies(file_bytes)
+                else:
+                    result = extract_text_from_browser_history(file_bytes)
 
             self.preview.setPlainText(result["text"][:6000])
             self.chunk_preview.clear()

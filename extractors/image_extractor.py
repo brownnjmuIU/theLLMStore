@@ -1,5 +1,6 @@
 import io
 from PIL import Image, ExifTags
+import pytesseract
 
 
 def extract_text_from_image(file_bytes: bytes) -> dict:
@@ -27,12 +28,22 @@ def extract_text_from_image(file_bytes: bytes) -> dict:
             except Exception:
                 lines.append(f"{tag_name}: [unreadable]")
 
-    # OCR placeholder for now (add later once pytesseract is confirmed)
+    ocr_text = ""
+    ocr_error = None
+    try:
+        ocr_text = pytesseract.image_to_string(img) or ""
+    except Exception as e:
+        ocr_text = ""
+        ocr_error = str(e)
+
     lines.append("")
     lines.append("OCR Text:")
-    lines.append("[OCR not enabled in this build yet]")
+    lines.append(ocr_text.strip() if ocr_text.strip() else "[No OCR text detected]")
+    if ocr_error:
+        lines.append(f"OCR Error: {ocr_error}")
 
     return {
         "text": "\n".join(lines).strip(),
-        "page_count": None
+        "page_count": None,
+        "ocr_text": ocr_text.strip()
     }
