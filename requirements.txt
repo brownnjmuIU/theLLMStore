@@ -7,3 +7,4 @@ PySide6
 faster-whisper
 pytesseract
 Pillow
+cryptography

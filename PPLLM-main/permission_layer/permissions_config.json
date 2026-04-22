@@ -1,0 +1,43 @@
+{
+  "default_policy": "deny",
+  "agents": {
+    "file_aggregator": {
+      "default_policy": "deny",
+      "resources": {
+        "raw_file": {
+          "actions": {
+            "read": [
+              "/data/user123/file1.pdf",
+              "/data/user123/file2.pdf"
+            ]
+          }
+        }
+      }
+    },
+    "extractor_tool": {
+      "default_policy": "deny",
+      "resources": {
+        "raw_file": {
+          "actions": {
+            "read": [
+              "*"
+            ]
+          }
+        }
+      }
+    },
+    "chatgpt_client": {
+      "default_policy": "deny",
+      "resources": {
+        "embedding": {
+          "actions": {
+            "serve_to_llm": [
+              "*"
+            ]
+          }
+        }
+      }
+    }
+  }
+}
+

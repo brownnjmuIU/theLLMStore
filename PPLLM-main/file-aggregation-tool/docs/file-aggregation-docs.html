@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>File Aggregation Tool — theLLMStore Documentation</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+      line-height: 1.6;
+      color: #333;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 2rem;
+      background: #fafafa;
+    }
+    header {
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    header a {
+      color: #666;
+      text-decoration: none;
+      font-size: 0.9rem;
+    }
+    header a:hover { color: #000; }
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 600;
+      margin-top: 0.5rem;
+    }
+    h2 {
+      font-size: 1.2rem;
+      margin-top: 2rem;
+      margin-bottom: 0.75rem;
+      color: #222;
+    }
+    p { margin-bottom: 1rem; }
+    ul {
+      margin-left: 1.5rem;
+      margin-bottom: 1rem;
+    }
+    li { margin-bottom: 0.25rem; }
+    code {
+      background: #eee;
+      padding: 0.15em 0.4em;
+      border-radius: 4px;
+      font-size: 0.9em;
+    }
+    .tagline {
+      color: #666;
+      font-size: 1rem;
+      margin-top: 0.25rem;
+    }
+    .section {
+      background: #fff;
+      padding: 1.5rem;
+      border-radius: 8px;
+      margin-bottom: 1.5rem;
+      border: 1px solid #eee;
+    }
+    .workflow {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      align-items: center;
+      margin: 1rem 0;
+      font-size: 0.95rem;
+    }
+    .workflow span {
+      background: #f0f0f0;
+      padding: 0.35rem 0.75rem;
+      border-radius: 6px;
+    }
+    .workflow .arrow { color: #888; }
+  </style>
+</head>
+<body>
+  <header>
+    <a href="https://thellmstore-qno3.onrender.com/index.html">← Back to theLLMStore</a>
+    <h1>File Aggregation Tool</h1>
+    <p class="tagline">Prepare your files for LLM processing, RAG, and document Q&amp;A</p>
+  </header>
+
+  <div class="section">
+    <h2>What It Does</h2>
+    <p>
+      The File Aggregation Tool crawls your home directory, identifies file types, and generates a structured JSON catalog of your documents, code, images, and data. It helps you decide which files to feed into LLMs for RAG (Retrieval-Augmented Generation), document Q&A, fine-tuning, or local chat—before you upload or process anything.
+    </p>
+  </div>
+
+  <div class="section">
+    <h2>High-Level Workflow</h2>
+    <div class="workflow">
+      <span>Scan</span>
+      <span class="arrow">→</span>
+      <span>Analyze</span>
+      <span class="arrow">→</span>
+      <span>Review by category</span>
+      <span class="arrow">→</span>
+      <span>Select files</span>
+      <span class="arrow">→</span>
+      <span>Export JSON</span>
+    </div>
+    <p>
+      The app scans your user folder (Documents, Desktop, Downloads, etc.) while excluding system and cache directories. Each file is classified (document, code, image, data, archive) and given a one-line summary. You pick only the files you want, then export them as JSON—ready for downstream LLM pipelines.
+    </p>
+  </div>
+
+  <div class="section">
+    <h2>Features</h2>
+    <ul>
+      <li><strong>Automatic discovery</strong> — Starts from your home directory; no path selection upfront</li>
+      <li><strong>File type detection</strong> — Documents (PDF, Word, Excel), code (Python, JS, etc.), images, video, audio, data (JSON, CSV), archives</li>
+      <li><strong>One-line summaries</strong> — Content previews or metadata (e.g., image dimensions, JSON structure, code line counts)</li>
+      <li><strong>Category-based UI</strong> — Browse files grouped by type with checkboxes to select</li>
+      <li><strong>Selective export</strong> — Export only the files you choose as JSON</li>
+      <li><strong>Standalone .exe</strong> — Can be packaged for Windows (or native binary on macOS/Linux) so users run it without Python</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h2>Use Cases for theLLMStore</h2>
+    <p>
+      Use the File Aggregation Tool to curate which documents and code you feed into:
+    </p>
+    <ul>
+      <li><strong>RAG pipelines</strong> — Select relevant docs, export JSON, then index for retrieval</li>
+      <li><strong>Document Q&A</strong> — Identify PDFs, Word files, and text docs before chunking and embedding</li>
+      <li><strong>Fine-tuning</strong> — Find and export training data (JSON, CSV, code) for LoRA or full model training</li>
+      <li><strong>Local chat / OpenClaw</strong> — Know what files you have before connecting them to your LLM</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h2>Quick Start</h2>
+    <p>
+      Run the GUI with <code>python3 gui_app.py</code>. Click <strong>Scan &amp; Aggregate</strong>, review files by category, select the ones you want, then click <strong>Export Selected to JSON</strong>. The JSON includes paths, types, sizes, summaries, and metadata—ready for your LLM workflow.
+    </p>
+  </div>
+
+  <footer style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #ddd; color: #888; font-size: 0.85rem;">
+    File Aggregation Tool — Part of the theLLMStore ecosystem. Document and prepare your files for LLMs.
+  </footer>
+</body>
+</html>

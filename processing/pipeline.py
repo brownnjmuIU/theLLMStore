@@ -6,15 +6,17 @@ from processing.chunker import chunk_text
 def process_document(
     file_path: str,
     chunk_size: int = 800,
-    chunk_overlap: int = 100
+    chunk_overlap: int = 100,
+    encrypt: bool = False,
 ) -> dict:
     """
-    Stage 4 Pipeline: Load → Clean → Chunk → Save
+    Stage 4 Pipeline: Load → Clean → Chunk → Save → (Optional) Encrypt
 
     Args:
         file_path: Path to Stage 3 JSON artifact
         chunk_size: Target chunk size in characters
         chunk_overlap: Overlap between chunks
+        encrypt: If True, encrypt the saved chunk artifact using RSA+AES hybrid encryption
 
     Returns:
         Chunk data structure (also saved to disk)
@@ -43,5 +45,14 @@ def process_document(
     # 5. Saving chunks to disk
     output_path = save_chunks(chunks_data)
     chunks_data["output_path"] = output_path
+
+    # 6. (Optional) Encrypt chunk artifact before transfer to cloud
+    if encrypt:
+        from encryption.key_manager import generate_keys
+        from encryption.artifact_crypto import encrypt_artifact
+        generate_keys()
+        enc_path = encrypt_artifact(output_path)
+        chunks_data["encrypted_path"] = str(enc_path)
+        print(f"[pipeline] Chunk artifact encrypted: {enc_path}")
 
     return chunks_data

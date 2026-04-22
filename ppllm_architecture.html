@@ -1,0 +1,1194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PPLLM System Architecture — Indiana University</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  background: #eef2f7;
+  color: #1a202c;
+  line-height: 1.5;
+}
+
+.page {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 44px 36px 60px;
+}
+
+/* ═══════════════════════════════════════
+   HEADER
+═══════════════════════════════════════ */
+.header {
+  text-align: center;
+  margin-bottom: 40px;
+  padding: 44px 40px 36px;
+  background: linear-gradient(140deg, #0a1628 0%, #0f2a6b 45%, #1a3fa6 80%, #1e4fbf 100%);
+  border-radius: 18px;
+  color: white;
+  box-shadow: 0 10px 40px rgba(14, 30, 100, 0.35);
+  position: relative;
+  overflow: hidden;
+}
+
+.header::before {
+  content: '';
+  position: absolute;
+  top: -60px; right: -60px;
+  width: 300px; height: 300px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.04);
+}
+
+.header::after {
+  content: '';
+  position: absolute;
+  bottom: -80px; left: -40px;
+  width: 250px; height: 250px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.03);
+}
+
+.header-badge {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #93c5fd;
+  background: rgba(147, 197, 253, 0.12);
+  border: 1px solid rgba(147, 197, 253, 0.3);
+  padding: 4px 16px;
+  border-radius: 20px;
+  margin-bottom: 18px;
+}
+
+.header h1 {
+  font-size: 1.85rem;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  line-height: 1.25;
+  margin-bottom: 14px;
+  color: #ffffff;
+}
+
+.header .subtitle {
+  font-size: 1.05rem;
+  color: #93c5fd;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 22px;
+}
+
+.header-meta {
+  display: flex;
+  justify-content: center;
+  gap: 36px;
+  font-size: 0.8rem;
+  color: #bfdbfe;
+  flex-wrap: wrap;
+}
+
+.header-meta span::before {
+  content: '◆ ';
+  font-size: 0.55rem;
+  vertical-align: middle;
+  opacity: 0.6;
+}
+
+/* ═══════════════════════════════════════
+   DIAGRAM WRAPPER
+═══════════════════════════════════════ */
+.diagram-wrapper {
+  background: white;
+  border-radius: 18px;
+  padding: 32px 36px 36px;
+  box-shadow: 0 4px 28px rgba(0,0,0,0.07);
+  margin-bottom: 44px;
+}
+
+/* ═══════════════════════════════════════
+   LEGEND
+═══════════════════════════════════════ */
+.legend {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 30px;
+  padding: 13px 20px;
+  background: #f8fafc;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  flex-wrap: wrap;
+}
+
+.legend-title {
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #64748b;
+  margin-right: 12px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #374151;
+  padding: 4px 12px 4px 6px;
+  border-radius: 6px;
+  background: white;
+  border: 1px solid #e2e8f0;
+}
+
+.legend-swatch {
+  width: 28px;
+  height: 18px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.legend-swatch.built {
+  background: #dbeafe;
+  border: 2.5px solid #1d4ed8;
+}
+
+.legend-swatch.proposed {
+  background: #ede9fe;
+  border: 2.5px dashed #6d28d9;
+}
+
+.legend-swatch.side {
+  background: #fef3c7;
+  border: 2.5px solid #d97706;
+}
+
+/* ═══════════════════════════════════════
+   DIAGRAM BODY  (two-column layout)
+═══════════════════════════════════════ */
+.diagram-body {
+  display: flex;
+  gap: 26px;
+  align-items: flex-start;
+}
+
+/* ═══════════════════════════════════════
+   MAIN PIPELINE COLUMN
+═══════════════════════════════════════ */
+.pipeline {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ═══════════════════════════════════════
+   LAYER BOXES — BUILT
+═══════════════════════════════════════ */
+.layer-box {
+  width: 100%;
+  border-radius: 12px;
+  padding: 18px 22px 16px;
+  position: relative;
+}
+
+.layer-box.built {
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border: 2px solid #1d4ed8;
+  box-shadow: 0 3px 12px rgba(29, 78, 216, 0.13);
+}
+
+.layer-box.proposed-main {
+  background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
+  border: 2.5px dashed #6d28d9;
+  box-shadow: 0 3px 10px rgba(109, 40, 217, 0.10);
+}
+
+/* ── Layer badge (top-left floating chip) ── */
+.layer-badge {
+  position: absolute;
+  top: -11px;
+  left: 20px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  padding: 2px 12px;
+  border-radius: 20px;
+  color: white;
+  white-space: nowrap;
+}
+
+.layer-badge.built-badge  { background: #1d4ed8; }
+.layer-badge.proposed-badge { background: #6d28d9; }
+
+/* ── Layer name ── */
+.layer-name {
+  font-size: 1rem;
+  font-weight: 800;
+  margin-bottom: 7px;
+  margin-top: 6px;
+  letter-spacing: -0.01em;
+}
+
+.layer-name.built-name     { color: #1e3a8a; }
+.layer-name.proposed-name  { color: #3b0764; }
+
+/* ── Layer functions text ── */
+.layer-functions {
+  font-size: 0.785rem;
+  color: #475569;
+  margin-bottom: 11px;
+  line-height: 1.65;
+}
+
+/* ── Sub-components row (tags inside a layer) ── */
+.sub-components {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-bottom: 10px;
+}
+
+.sub-tag {
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 6px;
+}
+
+.sub-tag.built-sub {
+  background: #bfdbfe;
+  color: #1e3a8a;
+  border: 1px solid #93c5fd;
+}
+
+.sub-tag.proposed-sub {
+  background: #ddd6fe;
+  color: #3b0764;
+  border: 1px solid #a78bfa;
+}
+
+/* ── Technology pills ── */
+.layer-tech {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 4px;
+}
+
+.tech-pill {
+  font-size: 0.67rem;
+  font-weight: 700;
+  padding: 2px 9px;
+  border-radius: 20px;
+  letter-spacing: 0.03em;
+}
+
+.tech-pill.built-pill    { background: #1d4ed8; color: white; }
+.tech-pill.proposed-pill { background: #6d28d9; color: white; }
+
+/* ═══════════════════════════════════════
+   ARROWS BETWEEN LAYERS
+═══════════════════════════════════════ */
+.arrow-down {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 2px 0;
+}
+
+.arrow-stem {
+  width: 2px;
+  height: 26px;
+  background: #94a3b8;
+}
+
+.arrow-label-text {
+  font-size: 0.62rem;
+  color: #94a3b8;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin: 2px 0;
+}
+
+.arrow-head {
+  width: 0;
+  height: 0;
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-top: 10px solid #94a3b8;
+}
+
+/* ═══════════════════════════════════════
+   PROPOSED SECTION DIVIDER
+═══════════════════════════════════════ */
+.section-divider {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 18px 0 14px;
+}
+
+.divider-line {
+  flex: 1;
+  height: 1px;
+  background: repeating-linear-gradient(
+    90deg, #a78bfa 0px, #a78bfa 6px, transparent 6px, transparent 14px
+  );
+}
+
+.divider-label {
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #6d28d9;
+  background: #f5f3ff;
+  padding: 5px 14px;
+  border-radius: 20px;
+  border: 2px dashed #a78bfa;
+  white-space: nowrap;
+}
+
+/* ═══════════════════════════════════════
+   SIDE PANEL  (right column)
+═══════════════════════════════════════ */
+.side-panel {
+  width: 272px;
+  flex-shrink: 0;
+}
+
+.side-panel-header {
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #78350f;
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  border: 2px solid #d97706;
+  border-radius: 10px;
+  padding: 7px 14px;
+  text-align: center;
+  margin-bottom: 18px;
+}
+
+.side-box {
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+  border: 2px solid #d97706;
+  border-radius: 12px;
+  padding: 15px 17px 13px;
+  margin-bottom: 18px;
+  box-shadow: 0 3px 8px rgba(217, 119, 6, 0.12);
+  position: relative;
+}
+
+.side-badge {
+  position: absolute;
+  top: -10px;
+  left: 16px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  padding: 2px 10px;
+  border-radius: 20px;
+  background: #d97706;
+  color: white;
+}
+
+.side-box-name {
+  font-size: 0.87rem;
+  font-weight: 800;
+  color: #78350f;
+  margin-bottom: 7px;
+  margin-top: 5px;
+  letter-spacing: -0.01em;
+}
+
+.side-box-desc {
+  font-size: 0.74rem;
+  color: #92400e;
+  line-height: 1.6;
+  margin-bottom: 10px;
+}
+
+.side-tech {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.side-pill {
+  font-size: 0.64rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 20px;
+  background: #d97706;
+  color: white;
+  letter-spacing: 0.03em;
+}
+
+/* ═══════════════════════════════════════
+   DATA FLOW NOTE
+═══════════════════════════════════════ */
+.data-flow-note {
+  width: 100%;
+  margin-top: 26px;
+  padding: 12px 22px;
+  background: #f0f9ff;
+  border: 1.5px solid #bae6fd;
+  border-radius: 10px;
+  font-size: 0.78rem;
+  color: #0369a1;
+  text-align: center;
+  font-style: italic;
+  letter-spacing: 0.01em;
+}
+
+/* ═══════════════════════════════════════
+   NARRATIVE SECTION
+═══════════════════════════════════════ */
+.narrative {
+  background: white;
+  border-radius: 18px;
+  padding: 42px 52px 48px;
+  box-shadow: 0 4px 28px rgba(0,0,0,0.07);
+}
+
+.narrative-title {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #1e3a8a;
+  margin-bottom: 6px;
+  letter-spacing: -0.02em;
+}
+
+.narrative-rule {
+  height: 3px;
+  background: linear-gradient(90deg, #1d4ed8, #7c3aed, transparent);
+  border-radius: 2px;
+  margin-bottom: 10px;
+}
+
+.narrative-intro {
+  font-size: 0.9rem;
+  color: #64748b;
+  font-style: italic;
+  margin-bottom: 34px;
+  line-height: 1.7;
+}
+
+.narrative-section {
+  margin-bottom: 30px;
+  padding-bottom: 28px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.narrative-section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.narrative-section h3 {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #1e3a8a;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  letter-spacing: -0.01em;
+}
+
+.n-badge {
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 2px 10px;
+  border-radius: 20px;
+  background: #1d4ed8;
+  color: white;
+  white-space: nowrap;
+}
+
+.narrative-section p {
+  font-size: 0.895rem;
+  color: #374151;
+  line-height: 1.8;
+}
+
+/* ═══════════════════════════════════════
+   RESPONSIVE & PRINT
+═══════════════════════════════════════ */
+@media print {
+  body { background: white; }
+  .page { padding: 20px; max-width: 100%; }
+  .header { box-shadow: none; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  .diagram-wrapper, .narrative { box-shadow: none; border: 1px solid #e2e8f0; }
+}
+
+@media (max-width: 960px) {
+  .diagram-body { flex-direction: column; }
+  .side-panel { width: 100%; }
+  .narrative { padding: 30px 24px; }
+  .header h1 { font-size: 1.4rem; }
+}
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- ═══════════ HEADER ═══════════ -->
+  <header class="header">
+    <div class="header-badge">Indiana University · April 2026</div>
+    <h1>PPLLM — Personalized Privacy-Preserving Local LLM System Architecture</h1>
+    <p class="subtitle">Indiana University Research</p>
+    <div class="header-meta">
+      <span>Project Lead: Nick</span>
+      <span>Co-Developers: Manas Dani &amp; Prabhakaran</span>
+    </div>
+  </header>
+
+  <!-- ═══════════ DIAGRAM WRAPPER ═══════════ -->
+  <div class="diagram-wrapper">
+
+    <!-- LEGEND -->
+    <div class="legend">
+      <span class="legend-title">Legend</span>
+      <span class="legend-item"><span class="legend-swatch built"></span>Implemented Layer (Solid Blue)</span>
+      <span class="legend-item"><span class="legend-swatch proposed"></span>Proposed Enhancement (Dashed Purple)</span>
+      <span class="legend-item"><span class="legend-swatch side"></span>Auxiliary Module (Amber)</span>
+    </div>
+
+    <!-- TWO-COLUMN BODY -->
+    <div class="diagram-body">
+
+      <!-- ══════ MAIN PIPELINE ══════ -->
+      <div class="pipeline">
+
+        <!-- ── LAYER 0: Desktop UI ── -->
+        <div class="layer-box built">
+          <span class="layer-badge built-badge">Layer 0 · User Entry Point</span>
+          <div class="layer-name built-name">User Interface Layer — Desktop Application</div>
+          <div class="layer-functions">
+            Two-step wizard: <strong>Step 1</strong> — file ingestion &amp; selection browser &nbsp;|&nbsp;
+            <strong>Step 2</strong> — process, chunk, and optional encrypt trigger.
+            Real-time activity log, chunk preview tabs, and encrypt checkbox wired directly to pipeline.
+            Packaged as a cross-platform executable via GitHub Actions CI/CD.
+          </div>
+          <div class="layer-tech">
+            <span class="tech-pill built-pill">PySide6 (Qt)</span>
+            <span class="tech-pill built-pill">Python 3</span>
+            <span class="tech-pill built-pill">GitHub Actions</span>
+            <span class="tech-pill built-pill">desktop_app.py</span>
+          </div>
+        </div>
+
+        <div class="arrow-down">
+          <div class="arrow-stem"></div>
+          <div class="arrow-label-text">user selects files</div>
+          <div class="arrow-head"></div>
+        </div>
+
+        <!-- ── LAYER 1: File Discovery & Aggregation ── -->
+        <div class="layer-box built">
+          <span class="layer-badge built-badge">Layer 1 · Data Discovery</span>
+          <div class="layer-name built-name">File Discovery &amp; Aggregation Layer</div>
+          <div class="layer-functions">
+            FileCrawler recursively scans local filesystem for candidate documents.
+            FileAnalyzer extracts per-file metadata: MIME type, size, modification timestamp, content hash.
+            Aggregator presents user with selection interface and exports a <strong>structured JSON manifest</strong>
+            of chosen file paths — cleanly separating discovery from extraction.
+          </div>
+          <div class="layer-tech">
+            <span class="tech-pill built-pill">Python (os.walk / pathlib)</span>
+            <span class="tech-pill built-pill">JSON Manifest</span>
+            <span class="tech-pill built-pill">Content Hash (doc_id)</span>
+            <span class="tech-pill built-pill">Prabhakaran's Aggregator</span>
+          </div>
+        </div>
+
+        <div class="arrow-down">
+          <div class="arrow-stem"></div>
+          <div class="arrow-label-text">JSON manifest of file paths</div>
+          <div class="arrow-head"></div>
+        </div>
+
+        <!-- ── LAYER 2: Permission & Access Control ── -->
+        <div class="layer-box built">
+          <span class="layer-badge built-badge">Layer 2 · Access Gating</span>
+          <div class="layer-name built-name">Permission &amp; Access Control Layer</div>
+          <div class="layer-functions">
+            PermissionManager evaluates per-file access rules from a JSON configuration.
+            Every file triggers an AccessRequest before any content is read — grant or deny.
+            Every decision is durably logged to <strong>access_log.db</strong> (SQLite) with timestamp, file path,
+            and policy outcome, enabling full data-provenance audit trails.
+          </div>
+          <div class="layer-tech">
+            <span class="tech-pill built-pill">SQLite (access_log.db)</span>
+            <span class="tech-pill built-pill">JSON Policy Config</span>
+            <span class="tech-pill built-pill">Python</span>
+            <span class="tech-pill built-pill">Prabhakaran's Permission Layer</span>
+          </div>
+        </div>
+
+        <div class="arrow-down">
+          <div class="arrow-stem"></div>
+          <div class="arrow-label-text">access-gated file paths</div>
+          <div class="arrow-head"></div>
+        </div>
+
+        <!-- ── LAYER 3: Integration Bridge ── -->
+        <div class="layer-box built">
+          <span class="layer-badge built-badge">Layer 3 · Pipeline Orchestration</span>
+          <div class="layer-name built-name">Integration Bridge</div>
+          <div class="layer-functions">
+            Reads the aggregator JSON manifest, resolves each file path, and dispatches each
+            document to the correct type-specific extractor. Optionally applies permission checks
+            and optionally triggers the encryption module post-chunking.
+            Bridge deliberately ignores aggregator content previews — extraction is always authoritative.
+          </div>
+          <div class="layer-tech">
+            <span class="tech-pill built-pill">Python</span>
+            <span class="tech-pill built-pill">process_aggregator_manifest.py</span>
+            <span class="tech-pill built-pill">encrypt=True flag</span>
+          </div>
+        </div>
+
+        <div class="arrow-down">
+          <div class="arrow-stem"></div>
+          <div class="arrow-label-text">file dispatched to extractor</div>
+          <div class="arrow-head"></div>
+        </div>
+
+        <!-- ── LAYER 4: Multi-Format Extraction ── -->
+        <div class="layer-box built">
+          <span class="layer-badge built-badge">Layer 4 · Content Extraction</span>
+          <div class="layer-name built-name">Multi-Format Extraction Layer (7 Extractors)</div>
+          <div class="layer-functions">
+            Seven specialized extractors handle every major personal file type.
+            Each extractor outputs a uniform envelope: <em>raw text string + metadata dict</em>.
+            Image OCR and video transcription run fully on-device — no external API calls.
+            Cookie extraction intentionally excludes value/encrypted_value for credential safety.
+          </div>
+          <div class="sub-components">
+            <span class="sub-tag built-sub">PDF (PyMuPDF)</span>
+            <span class="sub-tag built-sub">DOCX (python-docx)</span>
+            <span class="sub-tag built-sub">PPTX (python-pptx)</span>
+            <span class="sub-tag built-sub">Image OCR (pytesseract)</span>
+            <span class="sub-tag built-sub">Video Transcript (faster-whisper)</span>
+            <span class="sub-tag built-sub">Browser History (SQLite)</span>
+            <span class="sub-tag built-sub">Browser Cookies (SQLite)</span>
+            <span class="sub-tag built-sub">Platform JSON</span>
+          </div>
+          <div class="layer-tech">
+            <span class="tech-pill built-pill">PyMuPDF</span>
+            <span class="tech-pill built-pill">python-docx / python-pptx</span>
+            <span class="tech-pill built-pill">Tesseract OCR / Pillow</span>
+            <span class="tech-pill built-pill">faster-whisper</span>
+            <span class="tech-pill built-pill">ffmpeg / ffprobe</span>
+            <span class="tech-pill built-pill">SQLite</span>
+          </div>
+        </div>
+
+        <div class="arrow-down">
+          <div class="arrow-stem"></div>
+          <div class="arrow-label-text">raw text + metadata dict</div>
+          <div class="arrow-head"></div>
+        </div>
+
+        <!-- ── LAYER 5: Text Processing ── -->
+        <div class="layer-box built">
+          <span class="layer-badge built-badge">Layer 5 · Text Normalization</span>
+          <div class="layer-name built-name">Text Processing Layer — Clean &amp; Chunk</div>
+          <div class="layer-functions">
+            <strong>Cleaner (cleaner.py)</strong>: normalizes whitespace, strips extraction artifacts,
+            control characters, and encoding anomalies.
+            <strong>Chunker (chunker.py)</strong>: RecursiveCharacterTextSplitter with configurable size and overlap
+            window — each chunk annotated with doc_id, chunk index, source file type, and path.
+            Metadata tags preserve full data lineage for downstream retrieval attribution.
+          </div>
+          <div class="sub-components">
+            <span class="sub-tag built-sub">Cleaner → whitespace normalize</span>
+            <span class="sub-tag built-sub">Chunker → overlap split</span>
+            <span class="sub-tag built-sub">Metadata annotation</span>
+          </div>
+          <div class="layer-tech">
+            <span class="tech-pill built-pill">Python (cleaner.py)</span>
+            <span class="tech-pill built-pill">RecursiveCharacterTextSplitter</span>
+            <span class="tech-pill built-pill">chunker.py</span>
+          </div>
+        </div>
+
+        <div class="arrow-down">
+          <div class="arrow-stem"></div>
+          <div class="arrow-label-text">annotated text chunks</div>
+          <div class="arrow-head"></div>
+        </div>
+
+        <!-- ── LAYER 6: Storage ── -->
+        <div class="layer-box built">
+          <span class="layer-badge built-badge">Layer 6 · Artifact Persistence</span>
+          <div class="layer-name built-name">Local Storage Layer — JSON Artifact Store</div>
+          <div class="layer-functions">
+            <strong>Raw artifacts</strong> (full extracted text + metadata) saved to
+            <code style="font-size:0.75rem; background:#e0edff; padding:1px 5px; border-radius:3px;">~/LLM_Bundler/outputs/raw/</code>.&nbsp;
+            <strong>Chunk artifacts</strong> (array of annotated chunks) saved to
+            <code style="font-size:0.75rem; background:#e0edff; padding:1px 5px; border-radius:3px;">~/LLM_Bundler/outputs/chunks/</code>.
+            Stable doc_id computed from filename + SHA content hash — enables deduplication across repeated ingestion runs.
+            All data remains on-device: no external database dependency.
+          </div>
+          <div class="layer-tech">
+            <span class="tech-pill built-pill">JSON (json_store.py)</span>
+            <span class="tech-pill built-pill">Content Hash (doc_id)</span>
+            <span class="tech-pill built-pill">Local Filesystem</span>
+          </div>
+        </div>
+
+        <div class="arrow-down">
+          <div class="arrow-stem"></div>
+          <div class="arrow-label-text">chunk JSON artifact</div>
+          <div class="arrow-head"></div>
+        </div>
+
+        <!-- ── LAYER 7: Encryption ── -->
+        <div class="layer-box built">
+          <span class="layer-badge built-badge">Layer 7 · Secure Transfer</span>
+          <div class="layer-name built-name">Encryption Layer — RSA + AES-256-GCM Hybrid</div>
+          <div class="layer-functions">
+            <strong>key_manager.py</strong> generates and persists an RSA-2048 keypair locally.
+            <strong>artifact_crypto.py</strong> generates a fresh AES-256-GCM session key per artifact,
+            encrypts the chunk JSON, then RSA-encrypts the session key — both written to a single
+            <code style="font-size:0.75rem; background:#e0edff; padding:1px 5px; border-radius:3px;">.enc</code> file.
+            Decryption perfectly restores original JSON. Private key never leaves the origin machine.
+            Encryption is optional — triggered by checkbox in the UI or <code style="font-size:0.75rem; background:#e0edff; padding:1px 5px; border-radius:3px;">encrypt=True</code> flag.
+          </div>
+          <div class="layer-tech">
+            <span class="tech-pill built-pill">RSA-2048 (cryptography lib)</span>
+            <span class="tech-pill built-pill">AES-256-GCM</span>
+            <span class="tech-pill built-pill">key_manager.py</span>
+            <span class="tech-pill built-pill">artifact_crypto.py</span>
+          </div>
+        </div>
+
+        <!-- ── PROPOSED DIVIDER ── -->
+        <div class="section-divider">
+          <div class="divider-line"></div>
+          <span class="divider-label">⬇ Proposed Enhancements — Future Development Scope</span>
+          <div class="divider-line"></div>
+        </div>
+
+        <div class="arrow-down">
+          <div class="arrow-stem"></div>
+          <div class="arrow-label-text">encrypted chunks</div>
+          <div class="arrow-head"></div>
+        </div>
+
+        <!-- ── PROPOSED A: RAG / Vector Embedding ── -->
+        <div class="layer-box proposed-main">
+          <span class="layer-badge proposed-badge">Proposed · Semantic Retrieval</span>
+          <div class="layer-name proposed-name">RAG / Vector Embedding Layer</div>
+          <div class="layer-functions">
+            Embeds all chunk content into a <strong>local vector store</strong> using a sentence transformer model.
+            Semantic similarity search maps user queries to the most relevant chunks.
+            Retrieval API injects top-k chunks into LLM context window with source attribution.
+            Runs fully on-device — no external embedding API required.
+          </div>
+          <div class="sub-components">
+            <span class="sub-tag proposed-sub">Chunk Embedding</span>
+            <span class="sub-tag proposed-sub">Similarity Search</span>
+            <span class="sub-tag proposed-sub">Context Injection</span>
+          </div>
+          <div class="layer-tech">
+            <span class="tech-pill proposed-pill">ChromaDB / FAISS</span>
+            <span class="tech-pill proposed-pill">sentence-transformers</span>
+            <span class="tech-pill proposed-pill">LangChain Retriever</span>
+          </div>
+        </div>
+
+        <div class="arrow-down">
+          <div class="arrow-stem"></div>
+          <div class="arrow-label-text">retrieved context chunks</div>
+          <div class="arrow-head"></div>
+        </div>
+
+        <!-- ── PROPOSED B: Conversational Interface ── -->
+        <div class="layer-box proposed-main">
+          <span class="layer-badge proposed-badge">Proposed · LLM Integration</span>
+          <div class="layer-name proposed-name">Conversational Interface Layer</div>
+          <div class="layer-functions">
+            Routes user queries to semantically relevant chunks via the RAG layer.
+            Constructs context-aware prompts with retrieval metadata and source citations.
+            Streams LLM responses via a local model interface — Gemma 4, Llama 4, or Qwen3.5 via Ollama — or AnythingLLM.
+            Personalized query behavior shaped by the User Profile Engine.
+          </div>
+          <div class="layer-tech">
+            <span class="tech-pill proposed-pill">AnythingLLM</span>
+            <span class="tech-pill proposed-pill">LangChain</span>
+            <span class="tech-pill proposed-pill">Gemma 4 / Llama 4 / Qwen3.5 (local)</span>
+            <span class="tech-pill proposed-pill">Ollama</span>
+            <span class="tech-pill proposed-pill">Streaming API</span>
+          </div>
+        </div>
+
+        <div class="arrow-down">
+          <div class="arrow-stem"></div>
+          <div class="arrow-label-text">personalized response</div>
+          <div class="arrow-head"></div>
+        </div>
+
+        <!-- ── PROPOSED C: Cross-Platform Sync ── -->
+        <div class="layer-box proposed-main">
+          <span class="layer-badge proposed-badge">Proposed · Secure Distribution</span>
+          <div class="layer-name proposed-name">Cross-Platform Sync &amp; Transfer Protocol</div>
+          <div class="layer-functions">
+            Secure, encrypted chunk transfer between machines and authorized research collaborators.
+            Manifest reconciliation using Merkle tree diffing to sync only changed chunks.
+            End-to-end encrypted channel ensures plaintext never traverses the network.
+            Supports multi-party research sharing with per-recipient key targeting.
+          </div>
+          <div class="layer-tech">
+            <span class="tech-pill proposed-pill">TLS 1.3</span>
+            <span class="tech-pill proposed-pill">Protocol Buffers</span>
+            <span class="tech-pill proposed-pill">Merkle Tree Reconciliation</span>
+            <span class="tech-pill proposed-pill">RSA Recipient Key Targeting</span>
+          </div>
+        </div>
+
+        <div class="arrow-down">
+          <div class="arrow-stem"></div>
+          <div class="arrow-label-text">interaction feedback</div>
+          <div class="arrow-head"></div>
+        </div>
+
+        <!-- ── PROPOSED D: User Profile Engine ── -->
+        <div class="layer-box proposed-main">
+          <span class="layer-badge proposed-badge">Proposed · Personalization</span>
+          <div class="layer-name proposed-name">User Profile &amp; Preference Engine</div>
+          <div class="layer-functions">
+            Learns user preferences from interaction patterns: query history, document engagement,
+            feedback signals. Personalizes retrieval ranking — boosting relevance for frequently
+            consulted topics or recently active documents. Adapts conversational tone, depth, and
+            format to individual behavioral fingerprints — all stored locally.
+          </div>
+          <div class="layer-tech">
+            <span class="tech-pill proposed-pill">Interaction Log (SQLite)</span>
+            <span class="tech-pill proposed-pill">Collaborative Filtering</span>
+            <span class="tech-pill proposed-pill">Lightweight On-Device ML</span>
+            <span class="tech-pill proposed-pill">BM25 / Re-ranking</span>
+          </div>
+        </div>
+
+        <!-- DATA FLOW NOTE -->
+        <div class="data-flow-note">
+          Data flows top-to-bottom through the pipeline. All personal data remains on-device throughout the built layers.
+          Encrypted artifacts are the only permissible exit point to external systems.
+          Proposed layers extend the pipeline without changing the core privacy guarantee.
+        </div>
+
+      </div><!-- /pipeline -->
+
+      <!-- ══════ SIDE PANEL ══════ -->
+      <div class="side-panel">
+
+        <div class="side-panel-header">Auxiliary &amp; Proposed Modules</div>
+
+        <!-- Side A: Federated Key Exchange -->
+        <div class="side-box">
+          <span class="side-badge">Proposed · Key Infrastructure</span>
+          <div class="side-box-name">Federated Key Exchange Layer</div>
+          <div class="side-box-desc">
+            Distributed RSA key distribution enabling secure multi-party data sharing.
+            A decentralized key registry with zero-knowledge proof verification ensures
+            recipient authenticity without exposing identity. Enables the encryption layer
+            to target specific collaborators rather than a single local keypair.
+            Critical for enabling multi-institution and multi-user research data sharing.
+          </div>
+          <div class="side-tech">
+            <span class="side-pill">RSA Key Distribution</span>
+            <span class="side-pill">Zero-Knowledge Proofs</span>
+            <span class="side-pill">Distributed KMS</span>
+            <span class="side-pill">PKI Infrastructure</span>
+          </div>
+        </div>
+
+        <!-- Side B: Differential Privacy -->
+        <div class="side-box">
+          <span class="side-badge">Proposed · Privacy Guarantees</span>
+          <div class="side-box-name">Differential Privacy &amp; Anonymization Layer</div>
+          <div class="side-box-desc">
+            PII detection and automatic redaction before any chunk enters the vector store.
+            Named entity recognition flags personal names, email addresses, phone numbers,
+            and SSNs. K-anonymity guarantees applied to behavioral data (browser history,
+            cookies). Statistical noise injection (Laplace mechanism) prevents re-identification
+            from aggregate behavioral profiles — essential for IRB compliance.
+          </div>
+          <div class="side-tech">
+            <span class="side-pill">Microsoft Presidio</span>
+            <span class="side-pill">spaCy NER</span>
+            <span class="side-pill">Laplace Mechanism</span>
+            <span class="side-pill">k-Anonymity</span>
+          </div>
+        </div>
+
+        <!-- Side C: Audit & Compliance Dashboard -->
+        <div class="side-box">
+          <span class="side-badge">Proposed · Governance</span>
+          <div class="side-box-name">Audit &amp; Compliance Dashboard</div>
+          <div class="side-box-desc">
+            Visual log viewer for all access decisions, encryption events, and chunk-level
+            data lineage. Timeline view traces each document from source file → extraction
+            → chunk → encryption → transfer. Exportable compliance reports in PDF or JSON
+            for institutional or regulatory review. Integrates directly with
+            access_log.db and encryption event logs.
+          </div>
+          <div class="side-tech">
+            <span class="side-pill">PySide6 Dashboard</span>
+            <span class="side-pill">SQLite Analytics</span>
+            <span class="side-pill">Data Lineage Graph</span>
+            <span class="side-pill">PDF Report Export</span>
+          </div>
+        </div>
+
+        <!-- Side D: Plugin Framework -->
+        <div class="side-box">
+          <span class="side-badge">Proposed · Extensibility</span>
+          <div class="side-box-name">Plugin &amp; Extensibility Framework</div>
+          <div class="side-box-desc">
+            Pluggable extractor architecture allowing new file types to be added without
+            modifying core pipeline code. Community-contributed extractors run in a sandboxed
+            subprocess environment to prevent privilege escalation. A signed plugin manifest
+            schema and version-controlled registry ensure integrity. Transforms PPLLM from a
+            fixed tool into a platform — dramatically increasing research and commercial scope.
+          </div>
+          <div class="side-tech">
+            <span class="side-pill">Python importlib</span>
+            <span class="side-pill">Subprocess Sandbox</span>
+            <span class="side-pill">Plugin Manifest Schema</span>
+            <span class="side-pill">Cryptographic Signing</span>
+          </div>
+        </div>
+
+      </div><!-- /side-panel -->
+
+    </div><!-- /diagram-body -->
+  </div><!-- /diagram-wrapper -->
+
+  <!-- ═══════════ NARRATIVE ═══════════ -->
+  <div class="narrative">
+
+    <div class="narrative-title">Layer-by-Layer Engineering Narrative</div>
+    <div class="narrative-rule"></div>
+    <p class="narrative-intro">
+      The following descriptions detail each implemented layer of the PPLLM system — explaining what each component does,
+      why it is technically non-trivial, and what engineering stack powers it. These narratives are intended to accompany
+      the architecture diagram in a research paper or grant submission, demonstrating the depth and complexity of
+      the research prototype.
+    </p>
+
+    <!-- Layer 0: Desktop UI -->
+    <div class="narrative-section">
+      <h3>
+        <span class="n-badge">Layer 0</span>
+        User Interface Layer — PySide6 Desktop Application
+      </h3>
+      <p>
+        The user-facing entry point to the PPLLM system is a native desktop application built with PySide6,
+        Python's binding to the Qt framework. Earlier development relied on a browser-based Streamlit interface,
+        which introduced packaging instability, localhost dependency, and port-conflict issues that made
+        reliable end-user deployment impractical. Migrating to a native PySide6 window resolved these
+        problems by eliminating the localhost server dependency entirely and enabling direct in-process
+        communication between the UI and all backend pipeline components. The application presents a
+        two-step wizard: the first step handles file selection and ingestion type routing; the second step
+        triggers the full processing and chunking pipeline, exposes an encrypt checkbox that optionally
+        routes output through the RSA+AES-256-GCM encryption module, and renders a real-time activity log
+        alongside a tabbed preview of generated chunk artifacts. Distribution is handled through a GitHub
+        Actions CI/CD pipeline that compiles the application into a cross-platform executable, enabling
+        deployment on user machines without requiring a Python environment or manual dependency installation.
+      </p>
+    </div>
+
+    <!-- Layer 1: File Discovery -->
+    <div class="narrative-section">
+      <h3>
+        <span class="n-badge">Layer 1</span>
+        File Discovery &amp; Aggregation Layer
+      </h3>
+      <p>
+        The first data layer — built by Prabhakaran — is a file discovery and aggregation
+        tool that systematically crawls the user's local filesystem to surface candidate files for ingestion.
+        A FileCrawler component performs recursive directory traversal using Python's pathlib and os.walk,
+        while a FileAnalyzer component extracts per-file metadata including MIME type, file size, last
+        modification timestamp, and a content hash for deduplication purposes. The user is
+        presented with a selection interface, and confirmed files are exported as a structured JSON manifest
+        containing file paths and metadata records. Crucially, this manifest represents file paths and
+        lightweight metadata only — not extracted content — which cleanly separates the responsibility of
+        file discovery from the responsibility of format-specific content extraction. This separation
+        is architecturally significant: it allows the downstream extraction layer to own all parsing logic
+        without being contaminated by the aggregator's lightweight content previews, ensuring that the
+        authoritative text representation of each document always comes from the dedicated extractor.
+      </p>
+    </div>
+
+    <!-- Layer 2: Permissions -->
+    <div class="narrative-section">
+      <h3>
+        <span class="n-badge">Layer 2</span>
+        Permission &amp; Access Control Layer
+      </h3>
+      <p>
+        Before any file content is read or processed, every file access request passes through a permission
+        and access control layer that enforces a JSON-configured rule set. A PermissionManager component
+        loads a declarative policy configuration that governs which file types, directory paths, and
+        content categories are permitted for ingestion under different operational modes. Each file triggers
+        an AccessRequest evaluation against these policies before any extractor is invoked — granting
+        or denying access based on file type, path, and metadata signals. The engineering complexity here
+        lies not in the evaluation logic itself, but in the audit infrastructure: every access decision,
+        whether granted or denied, is durably logged to a SQLite database (access_log.db) with a
+        timestamp, file identifier, and policy outcome. This creates a queryable, persistent record
+        of data provenance that is essential for privacy-preserving research: investigators and IRB
+        reviewers can reconstruct exactly which personal files were accessed, when, under what conditions,
+        and whether access was refused — providing the transparency guarantees that responsible personal
+        data research requires.
+      </p>
+    </div>
+
+    <!-- Layer 3: Bridge -->
+    <div class="narrative-section">
+      <h3>
+        <span class="n-badge">Layer 3</span>
+        Integration Bridge
+      </h3>
+      <p>
+        The integration bridge (process_aggregator_manifest.py) is the orchestration script that connects
+        the file discovery and permission layers with the core extraction and chunking pipeline. It reads
+        the aggregator's JSON manifest, resolves each file path entry to an absolute filesystem path,
+        optionally applies permission checks by loading the PPLLM permission module if present, and then
+        dispatches each file to the appropriate type-specific extractor. The bridge was designed with a
+        clear architectural principle: it deliberately ignores any content preview or summary field
+        that the aggregator may include, relying entirely on the dedicated extractors to produce authoritative
+        raw text. This prevents format-specific quirks — multi-column PDF layouts, PPTX slide structures,
+        Whisper transcription decisions — from being short-circuited by lightweight metadata summaries.
+        The bridge also carries an optional encrypt=True flag that triggers the encryption module after
+        each chunk artifact is written, enabling the full pipeline to run in a single orchestrated pass
+        from file discovery through to encrypted artifact storage.
+      </p>
+    </div>
+
+    <!-- Layer 4: Extraction -->
+    <div class="narrative-section">
+      <h3>
+        <span class="n-badge">Layer 4</span>
+        Multi-Format Extraction Layer — Seven Specialized Extractors
+      </h3>
+      <p>
+        The extraction layer is the most technically heterogeneous component in the system, comprising
+        seven specialized extractors that handle every major personal file type a user might possess.
+        PDF files are parsed with PyMuPDF, which handles multi-column layouts, embedded fonts, and
+        document metadata with high fidelity. DOCX and PPTX files use python-docx and python-pptx
+        respectively to extract structured text from paragraphs, tables, slide content, and speaker notes.
+        Images are processed through pytesseract backed by the Tesseract OCR engine, converting pixel
+        data into machine-readable text with layout-aware segmentation. Videos are handled in two stages:
+        ffmpeg and ffprobe extract audio streams and metadata, then faster-whisper — a highly optimized
+        implementation of OpenAI's Whisper model — performs local automatic speech recognition, running
+        entirely on-device without any API calls or network dependency. Browser history and cookies are
+        extracted from the SQLite databases written by Chromium-based browsers, with cookie extraction
+        deliberately excluding value and encrypted_value fields to prevent inadvertent credential exposure.
+        Platform data exports from services such as Google Takeout or social media archives are parsed
+        as structured JSON records. All seven extractors produce a uniform output envelope — a raw text
+        string and a metadata dictionary — that flows identically into the downstream processing stage,
+        enabling the rest of the pipeline to remain format-agnostic.
+      </p>
+    </div>
+
+    <!-- Layer 5: Text Processing -->
+    <div class="narrative-section">
+      <h3>
+        <span class="n-badge">Layer 5</span>
+        Text Processing Layer — Clean &amp; Chunk
+      </h3>
+      <p>
+        After extraction, raw text passes through a two-stage text processing pipeline before it is
+        stored or used for retrieval. The first stage is a Cleaner (cleaner.py) that normalizes whitespace,
+        strips common extraction artifacts such as repeated newlines, control characters, Unicode directional
+        markers, and encoding anomalies introduced by OCR and PDF parsing — producing clean, prose-ready
+        text. The second stage is a Chunker (chunker.py) that implements a RecursiveCharacterTextSplitter
+        strategy: it divides cleaned text into fixed-size segments with a configurable overlap window,
+        ensuring that semantic continuity is preserved across chunk boundaries so that a sentence is never
+        split without its surrounding context being captured in an adjacent chunk. The engineering importance
+        of this stage lies in the metadata annotation applied to every chunk: each segment is tagged with
+        a stable doc_id (derived from the source filename and content hash), the chunk index within the
+        document, and the file type and path. These provenance tags are what makes the system retrieval-ready
+        — they allow a downstream RAG layer or a conversational LLM to trace exactly which source document
+        any retrieved passage originated from and surface that attribution transparently to the user.
+      </p>
+    </div>
+
+    <!-- Layer 6: Storage -->
+    <div class="narrative-section">
+      <h3>
+        <span class="n-badge">Layer 6</span>
+        Local Storage Layer — JSON Artifact Store
+      </h3>
+      <p>
+        All pipeline outputs are persisted as structured JSON artifacts on the local filesystem, avoiding
+        any external database dependency and ensuring that all personal data remains on-device throughout
+        the core pipeline. Raw artifacts — the direct output of the extraction stage — are written to
+        ~/Documents/LLM_Bundler/outputs/raw/, one JSON file per ingested document containing the full
+        extracted text and metadata dictionary. Chunk artifacts — the output of the text processing stage —
+        are written to ~/Documents/LLM_Bundler/outputs/chunks/, one JSON file per document containing
+        an array of chunk objects each with text content, doc_id, chunk index, and source metadata.
+        Document identity is tracked through a stable doc_id computed from a combination of the filename
+        and a content hash, enabling safe deduplication across repeated ingestion runs of the
+        same file without false collisions. The json_store.py helper module manages all read/write
+        operations and enforces a consistent artifact schema across all file types, ensuring that the
+        downstream encryption and retrieval layers can process any artifact without format negotiation.
+      </p>
+    </div>
+
+    <!-- Layer 7: Encryption -->
+    <div class="narrative-section">
+      <h3>
+        <span class="n-badge">Layer 7</span>
+        Encryption Layer — RSA-2048 + AES-256-GCM Hybrid
+      </h3>
+      <p>
+        The encryption layer provides a hybrid RSA+AES-256-GCM cryptographic scheme for securing chunk
+        artifacts before they leave the local machine — for example, before being transmitted to a cloud-hosted
+        LLM platform or shared with a research collaborator. The design follows industry-standard hybrid
+        encryption: at setup time, key_manager.py generates a 2048-bit RSA keypair and persists both
+        keys on the local filesystem at ~/Documents/LLM_Bundler/keys/. At encryption time, artifact_crypto.py
+        generates a fresh AES-256-GCM session key for each artifact, encrypts the entire chunk JSON
+        payload with that session key under the authenticated GCM mode (providing both confidentiality
+        and ciphertext integrity), and then RSA-encrypts the session key using the public key. Both the
+        RSA-wrapped session key and the GCM ciphertext are written together into a single .enc file in
+        ~/Documents/LLM_Bundler/encrypted/. Decryption reverses this exactly: the private key unwraps
+        the session key, the session key authenticates and decrypts the payload, and the original JSON
+        is restored without data loss. The critical privacy property of this design is that the private
+        key never needs to leave the originating machine — a recipient holding only the public key can
+        receive encrypted artifacts and forward them without being able to read their contents, enabling
+        future multi-party key exchange and federated research sharing scenarios that form the basis
+        of the proposed future research extensions.
+      </p>
+    </div>
+
+  </div><!-- /narrative -->
+
+</div><!-- /page -->
+
+</body>
+</html>

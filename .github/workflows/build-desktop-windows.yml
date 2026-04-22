@@ -4,6 +4,8 @@ on:
   workflow_dispatch:
   push:
     branches:
+      - main
+      - master
       - codex/pyside6-desktop-ui
 
 jobs:
@@ -25,11 +27,31 @@ jobs:
           pip install -r requirements.txt
           pip install pyinstaller
 
+      - name: Install Tesseract
+        run: choco install tesseract --yes
+
       - name: Build desktop app
-        run: pyinstaller --onedir --name LLM_Bundler_Desktop desktop_app.py
+        shell: pwsh
+        run: |
+          pyinstaller --onedir --name LLM_Bundler_Desktop `
+            --collect-all fitz `
+            --collect-all faster_whisper `
+            --collect-all cryptography `
+            --hidden-import pytesseract `
+            --hidden-import docx `
+            --hidden-import pptx `
+            --hidden-import sqlite3 `
+            --add-data "extractors;extractors" `
+            --add-data "processing;processing" `
+            --add-data "storage;storage" `
+            --add-data "encryption;encryption" `
+            --add-data "integration;integration" `
+            --add-data "PPLLM-main;PPLLM-main" `
+            desktop_app.py
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: LLM_Bundler_Desktop_windows_build
+          name: LLM_Bundler_Desktop_windows
           path: dist/LLM_Bundler_Desktop
+          retention-days: 30

@@ -1,0 +1,20 @@
+# File Aggregation Tool - Requirements
+
+# Core dependencies
+# (No external dependencies required for basic functionality)
+
+# Optional dependencies for enhanced features:
+
+# Image analysis (for PIL/Pillow)
+Pillow>=10.0.0
+
+# PDF processing (if needed)
+# PyPDF2>=3.0.0
+# pdfplumber>=0.9.0
+
+# Office document processing (if needed)
+# python-docx>=1.1.0
+# openpyxl>=3.1.0
+
+# For building .exe (Windows) or standalone binary
+pyinstaller>=6.0.0

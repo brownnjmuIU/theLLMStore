@@ -19,3 +19,26 @@ __pycache__/
 # Local-only folders
 Recordings/
 Dummies/
+outputs/
+test_files/
+
+# PyInstaller build artifacts
+build/
+dist/
+*.spec
+
+# Virtual environment
+.venv/
+
+# Temp/local files
+week14_plan.md
+CLAUDE.md
+*.tmp
+~$*
+
+# Internal session/task files
+.claude/
+FADS Docs/
+
+# Keys (never commit private keys)
+*.pem

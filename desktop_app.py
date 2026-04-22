@@ -4,6 +4,7 @@ from pathlib import Path
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QApplication,
+    QCheckBox,
     QFileDialog,
     QFormLayout,
     QGroupBox,
@@ -431,6 +432,12 @@ class LLMBundlerDesktop(QMainWindow):
         form.addRow("Chunk overlap (chars):", self.chunk_overlap)
         layout.addLayout(form)
 
+        self.encrypt_checkbox = QCheckBox("🔒  Encrypt chunk artifact after saving")
+        self.encrypt_checkbox.setToolTip(
+            "Encrypts the chunk JSON using RSA + AES-256 hybrid encryption before transfer."
+        )
+        layout.addWidget(self.encrypt_checkbox)
+
         action_row = QHBoxLayout()
         action_row.setSpacing(8)
         self.process_btn = QPushButton("🧩  Process + Save Chunk JSON")
@@ -467,6 +474,26 @@ class LLMBundlerDesktop(QMainWindow):
         self.selected_file = Path(file_path)
         self.file_path_input.setText(str(self.selected_file))
         self._log(f"📂 Selected: {self.selected_file.name}")
+
+        self._warn_if_sensitive(self.selected_file.name)
+
+    _SENSITIVE_KEYWORDS = {"private", "secret", "password", "bank", "ssn", "confidential"}
+
+    def _warn_if_sensitive(self, filename: str) -> None:
+        name_lower = filename.lower()
+        if any(kw in name_lower for kw in self._SENSITIVE_KEYWORDS):
+            result = QMessageBox.warning(
+                self,
+                "Sensitive File Detected",
+                f"'{filename}' may contain sensitive personal data.\n\n"
+                "Are you sure you want to extract and process this file?",
+                QMessageBox.Yes | QMessageBox.No,
+                QMessageBox.No,
+            )
+            if result == QMessageBox.No:
+                self.selected_file = None
+                self.file_path_input.clear()
+                self._log(f"🚫 Cancelled — sensitive file not processed: {filename}")
 
     def extract_and_save_raw(self) -> None:
         if self.selected_file is None:
@@ -553,10 +580,12 @@ class LLMBundlerDesktop(QMainWindow):
         QApplication.processEvents()
 
         try:
+            should_encrypt = self.encrypt_checkbox.isChecked()
             result = process_document(
                 file_path=self.raw_artifact_path,
                 chunk_size=self.chunk_size.value(),
                 chunk_overlap=self.chunk_overlap.value(),
+                encrypt=should_encrypt,
             )
             self.latest_chunks_path = result["output_path"]
             self.save_chunk_copy_btn.setEnabled(True)
@@ -578,11 +607,13 @@ class LLMBundlerDesktop(QMainWindow):
 
             self._log(f"✅ Chunking complete — {result['total_chunks']} chunks created")
             self._log(f"   Saved to: {self.latest_chunks_path}")
-            QMessageBox.information(
-                self,
-                "Success",
-                f"Chunking complete.\n{result['total_chunks']} chunks created.",
-            )
+            if should_encrypt and "encrypted_path" in result:
+                self._log(f"🔒 Encrypted artifact: {result['encrypted_path']}")
+
+            success_msg = f"Chunking complete.\n{result['total_chunks']} chunks created."
+            if should_encrypt and "encrypted_path" in result:
+                success_msg += f"\n\nEncrypted file saved to:\n{result['encrypted_path']}"
+            QMessageBox.information(self, "Success", success_msg)
         except Exception as exc:
             self._set_status("● Error", "warn")
             self.progress.setVisible(False)
