@@ -137,7 +137,7 @@ python desktop_app.py
 
 ## Aggregator Bridge (Interoperability)
 
-LLM Bundler connects with the PPLLM File Aggregation Tool (built by Prabhakaran). That tool lets you browse and select files from your computer into a manifest — this bridge then processes all selected files through the full pipeline automatically.
+LLM Bundler connects with the PPLLM File Aggregation Tool. That tool lets you browse and select files from your computer into a manifest — this bridge then processes all selected files through the full pipeline automatically.
 
 ```bash
 python integration/process_aggregator_manifest.py path/to/manifest.json
