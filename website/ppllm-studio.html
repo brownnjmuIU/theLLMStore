@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>PPLLM Studio | theLLMStore</title>
+    <meta
+      name="description"
+      content="PPLLM Studio is a Windows research prototype for privacy-first local file processing, chunking, encryption, and source-grounded AI assistance."
+    >
+    <link rel="stylesheet" href="styles.css?v=10">
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to main content</a>
+
+    <header class="site-header">
+      <nav class="nav" aria-label="Primary navigation">
+        <a class="brand" href="index.html" aria-label="theLLMStore home">
+          <span>theLLMStore</span>
+        </a>
+        <div class="nav-links" aria-label="Page sections">
+          <a href="index.html#resources">Resources</a>
+          <a href="#download">Download</a>
+          <a href="#assistant">Assistant</a>
+          <a href="#setup">Setup</a>
+          <a href="#faq">FAQ</a>
+        </div>
+      </nav>
+    </header>
+
+    <main id="main">
+      <section class="hero product-hero rounded-section" aria-labelledby="product-title">
+        <div class="hero-inner">
+          <p class="section-kicker">PPLLM Studio for Windows</p>
+          <h1 id="product-title">Privacy-first file prep for local AI.</h1>
+          <p class="hero-copy">
+            Extract readable text, create searchable chunks, optionally encrypt
+            outputs, and ask questions with a local Ollama model for research and education use.
+          </p>
+          <div class="hero-actions" aria-label="Primary actions">
+            <a class="button primary" href="https://github.com/brownnjmuIU/theLLMStore/releases/download/v0.1/PPLLM-Studio-Windows-v0.1.zip">Download Windows build</a>
+            <a class="button secondary" href="#setup">Read setup notes</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="section rounded-section product-download" id="download" aria-labelledby="download-title">
+        <div class="feature-layout">
+          <article class="product-card">
+            <div class="product-card-header">
+              <span class="product-mark" aria-hidden="true">
+                <svg viewBox="0 0 32 32" focusable="false">
+                  <path d="M7 6h12l6 6v14H7z"></path>
+                  <path d="M19 6v6h6"></path>
+                  <path d="M11 17h10"></path>
+                  <path d="M11 21h7"></path>
+                </svg>
+              </span>
+              <div>
+                <p class="section-kicker">Download</p>
+                <h2 id="download-title">PPLLM Studio v0.1</h2>
+                <p>Early Windows research and education prototype.</p>
+              </div>
+              <span class="badge">Windows</span>
+            </div>
+            <div class="tag-row" aria-label="Product tags">
+              <span>Local-first</span>
+              <span>Chunking</span>
+              <span>Encryption</span>
+              <span>Ollama</span>
+            </div>
+            <a class="button primary full" href="https://github.com/brownnjmuIU/theLLMStore/releases/download/v0.1/PPLLM-Studio-Windows-v0.1.zip">Download ZIP</a>
+            <p class="fine-print">
+              Public download link will be connected after the research build is hosted in a public location.
+            </p>
+          </article>
+
+          <div class="notes-panel" aria-label="Windows opening notes">
+            <div>
+              <h3>Windows SmartScreen</h3>
+              <p>
+                Because this is an early research prototype, Windows may show
+                "Windows protected your PC."
+              </p>
+              <p>Click <strong>More info</strong>, then <strong>Run anyway</strong>.</p>
+            </div>
+            <div>
+              <h3>Keep files together</h3>
+              <p>
+                Unzip the full folder. Keep <code>_internal</code> next to
+                <code>LLM_Bundler_Desktop.exe</code>.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section preview-section rounded-section" id="assistant" aria-labelledby="assistant-title">
+        <div class="preview-heading">
+          <p class="section-kicker">Assistant</p>
+          <h2 id="assistant-title">Answers stay tied to local source chunks.</h2>
+        </div>
+        <div class="studio-frame">
+          <div class="studio-topbar">
+            <span>PPLLM Studio</span>
+            <span class="status-pill">Assistant ready</span>
+          </div>
+          <div class="workspace-preview product-preview">
+            <div class="tool-panel">
+              <span class="panel-label">Processed file</span>
+              <strong>Government_ID_Sample.pdf</strong>
+              <span class="quiet-line"></span>
+              <span class="quiet-line short"></span>
+            </div>
+            <div class="assistant-preview">
+              <span class="panel-label">Local Assistant</span>
+              <div class="chat-pair">
+                <p class="user-bubble">What kind of document is this?</p>
+                <p>This is a sample government identification card.</p>
+              </div>
+              <span class="source-chip">Source 4412d895_0001</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section setup-section rounded-section" id="setup" aria-labelledby="setup-title">
+        <div class="section-heading">
+          <p class="section-kicker">Setup</p>
+          <h2 id="setup-title">Install once, then run locally.</h2>
+          <p>PPLLM Studio can process files without Ollama. The Assistant requires Ollama running locally.</p>
+        </div>
+
+        <div class="steps">
+          <article class="step-card">
+            <div class="step-topline">
+              <span class="step-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" focusable="false">
+                  <path d="M4 5h16v11H4z"></path>
+                  <path d="M8 19h8"></path>
+                  <path d="M12 16v3"></path>
+                </svg>
+              </span>
+              <span class="step-number">01</span>
+            </div>
+            <h3>Install app</h3>
+            <ol>
+              <li>Download <code>PPLLM-Studio-Windows-v0.1.zip</code>.</li>
+              <li>Unzip the full folder.</li>
+              <li>Open <code>LLM_Bundler_Desktop.exe</code>.</li>
+            </ol>
+          </article>
+
+          <article class="step-card">
+            <div class="step-topline">
+              <span class="step-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" focusable="false">
+                  <path d="M5.5 13.5c0-3.9 2.9-7 6.5-7s6.5 3.1 6.5 7v4h-13z"></path>
+                  <path d="M8.5 7.5 7 4.5"></path>
+                  <path d="M15.5 7.5 17 4.5"></path>
+                  <path d="M9 13h.01"></path>
+                  <path d="M15 13h.01"></path>
+                  <path d="M9 17h6"></path>
+                </svg>
+              </span>
+              <span class="step-number">02</span>
+            </div>
+            <h3>Install model</h3>
+            <a class="integration-badge" href="https://ollama.com" aria-label="Open Ollama website">
+              <span class="ollama-mark" aria-hidden="true"></span>
+              <span>Ollama</span>
+            </a>
+            <ol>
+              <li>Install Ollama for Windows.</li>
+              <li>Run <code>ollama pull llama3.1:8b</code>.</li>
+              <li>Start Ollama before using the Assistant.</li>
+            </ol>
+          </article>
+
+          <article class="step-card">
+            <div class="step-topline">
+              <span class="step-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" focusable="false">
+                  <path d="M5 4h9l5 5v11H5z"></path>
+                  <path d="M14 4v5h5"></path>
+                  <path d="M8 14h8"></path>
+                  <path d="M8 17h5"></path>
+                </svg>
+              </span>
+              <span class="step-number">03</span>
+            </div>
+            <h3>Use locally</h3>
+            <ol>
+              <li>Select supported files.</li>
+              <li>Extract and chunk text.</li>
+              <li>Ask questions and inspect sources.</li>
+            </ol>
+          </article>
+        </div>
+      </section>
+
+      <section class="section faq-section rounded-section" id="faq" aria-labelledby="faq-title">
+        <div class="section-heading">
+          <p class="section-kicker">FAQ</p>
+          <h2 id="faq-title">Common setup questions.</h2>
+          <p>Short notes for first-time Windows users and classroom testers.</p>
+        </div>
+
+        <div class="faq-grid">
+          <article>
+            <h3>Does PPLLM Studio send my files to the cloud?</h3>
+            <p>No. The workflow is designed around local file extraction, local chunks, and a local Ollama Assistant.</p>
+          </article>
+          <article>
+            <h3>Do I need Ollama?</h3>
+            <p>You can process files without Ollama. The Assistant feature needs Ollama running locally.</p>
+          </article>
+          <article>
+            <h3>Which model should I install first?</h3>
+            <p>Start with <code>ollama pull llama3.1:8b</code>. Larger models may run slowly on normal laptops.</p>
+          </article>
+          <article>
+            <h3>Why does Windows show SmartScreen?</h3>
+            <p>This is an early research prototype and is not code-signed yet. Click <strong>More info</strong>, then <strong>Run anyway</strong>.</p>
+          </article>
+          <article>
+            <h3>What if the Assistant gives an error?</h3>
+            <p>Check that Ollama is open and running in the background, then restart PPLLM Studio.</p>
+          </article>
+          <article>
+            <h3>What files must stay together?</h3>
+            <p>Keep the <code>_internal</code> folder next to <code>LLM_Bundler_Desktop.exe</code> after unzipping.</p>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <span class="footer-brand">theLLMStore</span>
+      <p><a href="index.html">Back to home</a></p>
+    </footer>
+  </body>
+</html>

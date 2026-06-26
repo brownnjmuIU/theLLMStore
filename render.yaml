@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: thellmstore
+    runtime: static
+    buildCommand: ""
+    staticPublishPath: website
