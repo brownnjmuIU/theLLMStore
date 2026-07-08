@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Browser PPLLM Studio | theLLMStore</title>
+    <meta
+      name="description"
+      content="A browser-based PPLLM Studio proof of concept for demonstrating privacy-first file processing, chunking, encryption, and source-grounded Assistant workflows."
+    >
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" href="styles.css?v=11">
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to main content</a>
+
+    <header class="site-header">
+      <nav class="nav" aria-label="Primary navigation">
+        <a class="brand" href="index.html" aria-label="theLLMStore home">
+          <span>theLLMStore</span>
+        </a>
+        <div class="nav-links" aria-label="Page sections">
+          <a href="index.html#resources">Resources</a>
+          <a href="ppllm-studio.html">Windows App</a>
+          <a href="#browser-demo">Browser Demo</a>
+          <a href="#handoff">Handoff</a>
+        </div>
+      </nav>
+    </header>
+
+    <main id="main">
+      <section class="hero product-hero browser-hero rounded-section" aria-labelledby="browser-title">
+        <div class="hero-inner">
+          <p class="section-kicker">Browser-based PPLLM Studio proof of concept</p>
+          <h1 id="browser-title">Explore the local-first workflow in the browser.</h1>
+          <p class="hero-copy">
+            This front-end prototype lets NSF and IU grant reviewers interact with
+            PPLLM Studio's file-prep, chunking, encryption, and source-grounded
+            Assistant flow without server, API, model, or hosting costs.
+          </p>
+          <div class="hero-actions" aria-label="Primary actions">
+            <a class="button primary" href="#browser-demo">Launch browser demo</a>
+            <a class="button secondary" href="ppllm-studio.html">View Windows version</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="section rounded-section browser-app-section" id="browser-demo" aria-labelledby="demo-title">
+        <div class="browser-app" data-browser-app>
+          <div class="browser-app-topbar">
+            <div>
+              <p class="section-kicker">PPLLM Studio Web</p>
+              <h2 id="demo-title">Responsible AI workflow simulator.</h2>
+            </div>
+            <span class="status-pill" data-status>Ready for sample file</span>
+          </div>
+
+          <div class="browser-workspace">
+            <aside class="browser-sidebar" aria-label="Workflow">
+              <button class="browser-step active" type="button" data-step="ingest">
+                <span>01</span>
+                <strong>Ingest</strong>
+              </button>
+              <button class="browser-step" type="button" data-step="process">
+                <span>02</span>
+                <strong>Process</strong>
+              </button>
+              <button class="browser-step" type="button" data-step="assistant">
+                <span>03</span>
+                <strong>Assistant</strong>
+              </button>
+              <button class="browser-step" type="button" data-step="sources">
+                <span>04</span>
+                <strong>Sources</strong>
+              </button>
+            </aside>
+
+            <div class="browser-main">
+              <section class="browser-panel active" data-panel="ingest" aria-labelledby="ingest-title">
+                <div class="panel-heading">
+                  <p class="section-kicker">Private file selection</p>
+                  <h3 id="ingest-title">Use a sample classroom document.</h3>
+                  <p>
+                    Reviewers can explore the workflow with a built-in sample file.
+                    No real files are uploaded, read, or transmitted.
+                  </p>
+                </div>
+
+                <div class="file-surface">
+                  <div>
+                    <span class="panel-label">Selected file</span>
+                    <strong>AI_Privacy_Classroom_Module.pdf</strong>
+                    <p>Sample educational source for evaluating privacy-first AI workflows.</p>
+                  </div>
+                  <div class="file-meta">
+                    <span>18 pages</span>
+                    <span>PDF</span>
+                    <span>Local-only simulation</span>
+                  </div>
+                </div>
+
+                <div class="privacy-strip" aria-label="Prototype privacy guarantees">
+                  <span>No upload</span>
+                  <span>No API key</span>
+                  <span>No model call</span>
+                  <span>No server processing</span>
+                </div>
+
+                <button class="button primary" type="button" data-action="select-file">Use sample file</button>
+              </section>
+
+              <section class="browser-panel" data-panel="process" aria-labelledby="process-title">
+                <div class="panel-heading">
+                  <p class="section-kicker">Processing pipeline</p>
+                  <h3 id="process-title">Convert source material into local evidence.</h3>
+                  <p>
+                    The browser demo mirrors the desktop app's conceptual pipeline:
+                    extraction, cleaning, chunking, optional encryption, and manifest creation.
+                  </p>
+                </div>
+
+                <div class="pipeline-grid" aria-label="Processing stages">
+                  <article data-stage="extract">
+                    <span>Extract</span>
+                    <strong>Readable text</strong>
+                    <p>Finds classroom text from the sample PDF.</p>
+                  </article>
+                  <article data-stage="clean">
+                    <span>Clean</span>
+                    <strong>Normalized content</strong>
+                    <p>Removes duplicate spacing and prepares text for chunking.</p>
+                  </article>
+                  <article data-stage="chunk">
+                    <span>Chunk</span>
+                    <strong>Searchable evidence</strong>
+                    <p>Creates source units for retrieval and citation.</p>
+                  </article>
+                  <article data-stage="encrypt">
+                    <span>Protect</span>
+                    <strong>Optional encryption</strong>
+                    <p>Represents local artifact protection.</p>
+                  </article>
+                </div>
+
+                <button class="button primary" type="button" data-action="process-file">Process sample</button>
+
+                <div class="artifact-panel" data-artifacts hidden>
+                  <div>
+                    <span class="panel-label">Generated artifacts</span>
+                    <strong>12 chunks · 1 manifest · encryption available</strong>
+                    <p>Artifacts are simulated in browser memory for this proof of concept.</p>
+                  </div>
+                  <button class="button secondary" type="button" data-action="open-assistant">Open Assistant</button>
+                </div>
+              </section>
+
+              <section class="browser-panel" data-panel="assistant" aria-labelledby="assistant-demo-title">
+                <div class="panel-heading">
+                  <p class="section-kicker">Source-grounded Assistant</p>
+                  <h3 id="assistant-demo-title">Ask a question about the processed source.</h3>
+                  <p>
+                    The response is hardcoded for grant demonstration. It shows the
+                    intended interaction model before a funded backend is connected.
+                  </p>
+                </div>
+
+                <div class="prompt-row">
+                  <button class="button secondary" type="button" data-question="privacy">Privacy and local AI</button>
+                  <button class="button secondary" type="button" data-question="citations">Why cite sources?</button>
+                  <button class="button secondary" type="button" data-question="encryption">Encryption purpose</button>
+                </div>
+
+                <div class="chat-window" data-chat aria-live="polite">
+                  <div class="assistant-empty">
+                    Select a sample question to generate a source-grounded response.
+                  </div>
+                </div>
+              </section>
+
+              <section class="browser-panel" data-panel="sources" aria-labelledby="sources-title">
+                <div class="panel-heading">
+                  <p class="section-kicker">Citation transparency</p>
+                  <h3 id="sources-title">Inspect the chunks behind the answer.</h3>
+                  <p>
+                    Source previews help learners evaluate whether an AI answer is
+                    grounded in the material that PPLLM Studio processed.
+                  </p>
+                </div>
+
+                <div class="source-grid">
+                  <button class="source-card" type="button" data-source="module_0003">
+                    <span>module_0003</span>
+                    <strong>Local-first data flow</strong>
+                    <p>Explains why files should stay on the user's device when possible.</p>
+                  </button>
+                  <button class="source-card" type="button" data-source="module_0007">
+                    <span>module_0007</span>
+                    <strong>Source-grounded answers</strong>
+                    <p>Connects Assistant claims back to classroom evidence.</p>
+                  </button>
+                  <button class="source-card" type="button" data-source="module_0010">
+                    <span>module_0010</span>
+                    <strong>Artifact protection</strong>
+                    <p>Introduces encryption as an optional local safeguard.</p>
+                  </button>
+                </div>
+              </section>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section rounded-section handoff-section" id="handoff" aria-labelledby="handoff-title">
+        <div class="section-heading">
+          <p class="section-kicker">Next developer handoff</p>
+          <h2 id="handoff-title">Static now, backend-ready later.</h2>
+          <p>
+            This browser version is intentionally front-end only. Future funded work can
+            replace the simulated stages with browser upload handling, server processing,
+            authentication, and a real model connector.
+          </p>
+        </div>
+        <div class="handoff-grid">
+          <article>
+            <h3>What works now</h3>
+            <p>Interactive workflow navigation, simulated processing state, hardcoded Assistant answers, and source previews.</p>
+          </article>
+          <article>
+            <h3>What is intentionally fake</h3>
+            <p>No file bytes are read, no extraction happens, no model is called, and no data leaves the browser.</p>
+          </article>
+          <article>
+            <h3>Where to extend</h3>
+            <p>Replace the simulated JavaScript state with a real upload/process/chat API when funding supports hosting.</p>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <div class="source-modal" data-source-modal hidden role="dialog" aria-modal="true" aria-labelledby="source-modal-title">
+      <div class="source-modal-card">
+        <button class="modal-close" type="button" data-close-source aria-label="Close source preview">×</button>
+        <p class="section-kicker">Source preview</p>
+        <h2 id="source-modal-title" data-source-title>module_0003</h2>
+        <p class="source-modal-file">AI_Privacy_Classroom_Module.pdf</p>
+        <p class="source-quote" data-source-text></p>
+      </div>
+    </div>
+
+    <footer class="site-footer">
+      <span class="footer-brand">theLLMStore</span>
+      <p><a href="index.html">Back to home</a></p>
+    </footer>
+
+    <script>
+      (() => {
+        const app = document.querySelector("[data-browser-app]");
+        const status = app.querySelector("[data-status]");
+        const panels = app.querySelectorAll("[data-panel]");
+        const steps = app.querySelectorAll("[data-step]");
+        const stages = app.querySelectorAll("[data-stage]");
+        const artifacts = app.querySelector("[data-artifacts]");
+        const chat = app.querySelector("[data-chat]");
+        const modal = document.querySelector("[data-source-modal]");
+        const modalTitle = document.querySelector("[data-source-title]");
+        const modalText = document.querySelector("[data-source-text]");
+
+        const sources = {
+          module_0003: {
+            title: "module_0003 · Local-first data flow",
+            text: "The module asks students to compare cloud and local AI workflows, with special attention to whether source files leave the user's device during processing."
+          },
+          module_0007: {
+            title: "module_0007 · Source-grounded answers",
+            text: "Responsible AI instruction should teach users to inspect the evidence behind an answer, especially when an Assistant summarizes classroom or organizational material."
+          },
+          module_0010: {
+            title: "module_0010 · Artifact protection",
+            text: "Encryption can protect generated artifacts after extraction and chunking, but it should be explained as a local safeguard rather than a substitute for careful data handling."
+          }
+        };
+
+        const answers = {
+          privacy: {
+            question: "How does PPLLM Studio teach privacy and local AI?",
+            answer: "PPLLM Studio teaches privacy by showing each step in the file workflow: selecting a local source, extracting readable text, creating chunks, and keeping artifacts on the user's device. The browser demo keeps that lesson visible while avoiding any upload or model call.",
+            source: "module_0003"
+          },
+          citations: {
+            question: "Why should the Assistant cite sources?",
+            answer: "Source citations help learners check whether an AI answer is actually grounded in the processed material. In PPLLM Studio, chunk previews make the evidence visible instead of asking users to trust the Assistant blindly.",
+            source: "module_0007"
+          },
+          encryption: {
+            question: "What role does encryption play in the workflow?",
+            answer: "Encryption is presented as an optional local protection step for generated artifacts. It supports the broader privacy lesson by showing that outputs from AI workflows also deserve careful handling.",
+            source: "module_0010"
+          }
+        };
+
+        const showPanel = (name) => {
+          panels.forEach((panel) => panel.classList.toggle("active", panel.dataset.panel === name));
+          steps.forEach((step) => step.classList.toggle("active", step.dataset.step === name));
+        };
+
+        steps.forEach((step) => {
+          step.addEventListener("click", () => showPanel(step.dataset.step));
+        });
+
+        app.querySelector("[data-action='select-file']").addEventListener("click", () => {
+          status.textContent = "Sample file selected";
+          showPanel("process");
+        });
+
+        app.querySelector("[data-action='process-file']").addEventListener("click", (event) => {
+          stages.forEach((stage) => stage.classList.add("complete"));
+          artifacts.hidden = false;
+          status.textContent = "12 source chunks ready";
+          event.currentTarget.textContent = "Sample processed";
+          event.currentTarget.disabled = true;
+        });
+
+        app.querySelector("[data-action='open-assistant']").addEventListener("click", () => {
+          status.textContent = "Assistant ready";
+          showPanel("assistant");
+        });
+
+        app.querySelectorAll("[data-question]").forEach((button) => {
+          button.addEventListener("click", () => {
+            const item = answers[button.dataset.question];
+            status.textContent = "Answer grounded in " + item.source;
+            chat.innerHTML = `
+              <div class="chat-bubble user">${item.question}</div>
+              <div class="chat-bubble assistant">
+                <p>${item.answer}</p>
+                <button class="source-chip" type="button" data-source="${item.source}">${item.source}</button>
+              </div>
+            `;
+          });
+        });
+
+        document.addEventListener("click", (event) => {
+          const sourceButton = event.target.closest("[data-source]");
+          if (!sourceButton) return;
+          const source = sources[sourceButton.dataset.source];
+          if (!source) return;
+          modalTitle.textContent = source.title;
+          modalText.textContent = source.text;
+          modal.hidden = false;
+          document.querySelector("[data-close-source]").focus();
+        });
+
+        document.querySelector("[data-close-source]").addEventListener("click", () => {
+          modal.hidden = true;
+        });
+
+        modal.addEventListener("click", (event) => {
+          if (event.target === modal) modal.hidden = true;
+        });
+
+        document.addEventListener("keydown", (event) => {
+          if (event.key === "Escape") modal.hidden = true;
+        });
+      })();
+    </script>
+  </body>
+</html>
