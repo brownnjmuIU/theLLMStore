@@ -23,7 +23,7 @@
           <a href="index.html#resources">Resources</a>
           <a href="ppllm-studio.html">Windows App</a>
           <a href="#browser-demo">Browser Demo</a>
-          <a href="#handoff">Handoff</a>
+          <a href="#scope">Scope</a>
         </div>
       </nav>
     </header>
@@ -34,9 +34,9 @@
           <p class="section-kicker">Browser-based PPLLM Studio proof of concept</p>
           <h1 id="browser-title">Explore the local-first workflow in the browser.</h1>
           <p class="hero-copy">
-            This front-end prototype lets NSF and IU grant reviewers interact with
-            PPLLM Studio's file-prep, chunking, encryption, and source-grounded
-            Assistant flow without server, API, model, or hosting costs.
+            This lightweight browser prototype demonstrates PPLLM Studio's
+            local-first workflow, including file preparation, chunking, optional
+            encryption, Assistant interaction, and source transparency.
           </p>
           <div class="hero-actions" aria-label="Primary actions">
             <a class="button primary" href="#browser-demo">Launch browser demo</a>
@@ -159,8 +159,9 @@
                   <p class="section-kicker">Source-grounded Assistant</p>
                   <h3 id="assistant-demo-title">Ask a question about the processed source.</h3>
                   <p>
-                    The response is hardcoded for grant demonstration. It shows the
-                    intended interaction model before a funded backend is connected.
+                    The response is simulated for this browser prototype. It shows
+                    the intended interaction model while keeping the experience
+                    simple, private, and easy to explore.
                   </p>
                 </div>
 
@@ -210,14 +211,14 @@
         </div>
       </section>
 
-      <section class="section rounded-section handoff-section" id="handoff" aria-labelledby="handoff-title">
+      <section class="section rounded-section handoff-section" id="scope" aria-labelledby="scope-title">
         <div class="section-heading">
-          <p class="section-kicker">Next developer handoff</p>
-          <h2 id="handoff-title">Static now, backend-ready later.</h2>
+          <p class="section-kicker">Prototype scope</p>
+          <h2 id="scope-title">A simple preview of a local-first workflow.</h2>
           <p>
-            This browser version is intentionally front-end only. Future funded work can
-            replace the simulated stages with browser upload handling, server processing,
-            authentication, and a real model connector.
+            This browser version is intentionally front-end only. It is designed
+            to help people understand the workflow before they install or test
+            the local desktop application.
           </p>
         </div>
         <div class="handoff-grid">
@@ -226,12 +227,12 @@
             <p>Interactive workflow navigation, simulated processing state, hardcoded Assistant answers, and source previews.</p>
           </article>
           <article>
-            <h3>What is intentionally fake</h3>
+            <h3>Prototype boundary</h3>
             <p>No file bytes are read, no extraction happens, no model is called, and no data leaves the browser.</p>
           </article>
           <article>
-            <h3>Where to extend</h3>
-            <p>Replace the simulated JavaScript state with a real upload/process/chat API when funding supports hosting.</p>
+            <h3>Future direction</h3>
+            <p>A later version can connect the same workflow to real processing and model services if the project needs a hosted web app.</p>
           </article>
         </div>
       </section>
