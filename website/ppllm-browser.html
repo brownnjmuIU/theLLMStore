@@ -23,7 +23,6 @@
           <a href="index.html#resources">Resources</a>
           <a href="ppllm-studio.html">Windows App</a>
           <a href="#browser-demo">Browser Demo</a>
-          <a href="#scope">Scope</a>
         </div>
       </nav>
     </header>
@@ -157,11 +156,11 @@
               <section class="browser-panel" data-panel="assistant" aria-labelledby="assistant-demo-title">
                 <div class="panel-heading">
                   <p class="section-kicker">Source-grounded Assistant</p>
-                  <h3 id="assistant-demo-title">Ask a question about the processed source.</h3>
+                  <h3 id="assistant-demo-title">Ask a question about the sample document.</h3>
                   <p>
-                    The response is simulated for this browser prototype. It shows
-                    the intended interaction model while keeping the experience
-                    simple, private, and easy to explore.
+                    This browser prototype uses a simulated response to show how
+                    PPLLM Studio can answer questions while keeping source
+                    evidence visible.
                   </p>
                 </div>
 
@@ -180,11 +179,11 @@
 
               <section class="browser-panel" data-panel="sources" aria-labelledby="sources-title">
                 <div class="panel-heading">
-                  <p class="section-kicker">Citation transparency</p>
-                  <h3 id="sources-title">Inspect the chunks behind the answer.</h3>
+                  <p class="section-kicker">Source transparency</p>
+                  <h3 id="sources-title">See the sources behind the answer.</h3>
                   <p>
-                    Source previews help learners evaluate whether an AI answer is
-                    grounded in the material that PPLLM Studio processed.
+                    Source previews help learners check whether an AI answer is
+                    grounded in the material PPLLM Studio processed.
                   </p>
                 </div>
 
@@ -208,32 +207,6 @@
               </section>
             </div>
           </div>
-        </div>
-      </section>
-
-      <section class="section rounded-section handoff-section" id="scope" aria-labelledby="scope-title">
-        <div class="section-heading">
-          <p class="section-kicker">Prototype scope</p>
-          <h2 id="scope-title">A simple preview of a local-first workflow.</h2>
-          <p>
-            This browser version is intentionally front-end only. It is designed
-            to help people understand the workflow before they install or test
-            the local desktop application.
-          </p>
-        </div>
-        <div class="handoff-grid">
-          <article>
-            <h3>What works now</h3>
-            <p>Interactive workflow navigation, simulated processing state, hardcoded Assistant answers, and source previews.</p>
-          </article>
-          <article>
-            <h3>Prototype boundary</h3>
-            <p>No file bytes are read, no extraction happens, no model is called, and no data leaves the browser.</p>
-          </article>
-          <article>
-            <h3>Future direction</h3>
-            <p>A later version can connect the same workflow to real processing and model services if the project needs a hosted web app.</p>
-          </article>
         </div>
       </section>
     </main>
@@ -334,13 +307,33 @@
               <div class="chat-bubble user">${item.question}</div>
               <div class="chat-bubble assistant">
                 <p>${item.answer}</p>
-                <button class="source-chip" type="button" data-source="${item.source}">${item.source}</button>
+                <button class="source-chip" type="button" data-answer-source="${item.source}" aria-expanded="false">${item.source}</button>
+                <div class="source-jump" data-source-jump hidden>
+                  <button class="button secondary" type="button" data-action="show-sources">Sources</button>
+                </div>
               </div>
             `;
           });
         });
 
         document.addEventListener("click", (event) => {
+          const answerSourceButton = event.target.closest("[data-answer-source]");
+          if (answerSourceButton) {
+            const sourceJump = answerSourceButton.parentElement.querySelector("[data-source-jump]");
+            if (sourceJump) {
+              sourceJump.hidden = false;
+              answerSourceButton.setAttribute("aria-expanded", "true");
+            }
+            return;
+          }
+
+          if (event.target.closest("[data-action='show-sources']")) {
+            status.textContent = "Source previews ready";
+            showPanel("sources");
+            document.querySelector("#browser-demo").scrollIntoView({ behavior: "smooth", block: "start" });
+            return;
+          }
+
           const sourceButton = event.target.closest("[data-source]");
           if (!sourceButton) return;
           const source = sources[sourceButton.dataset.source];

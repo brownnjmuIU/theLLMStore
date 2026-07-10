@@ -1551,6 +1551,10 @@ body {
   margin-bottom: 0.8rem;
 }
 
+.source-jump {
+  margin-top: 0.85rem;
+}
+
 .source-card {
   width: 100%;
   color: inherit;
