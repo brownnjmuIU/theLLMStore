@@ -7,11 +7,14 @@ def clean_text(text: str)->str:
     Preserves meaningful strcuure while removing noise
     """
 
+    # Normalizing line endings.
+    # This MUST run before dehyphenation below: the (\w)-\n(\w) pattern cannot
+    # match CRLF input ("-\r\n"), so reversing this order silently disables
+    # dehyphenation for every Windows-authored document.
+    text = text.replace('\r\n', '\n').replace('\r', '\n')
+
     # Fixing hyphenation artifacts (word-\n continuation)
     text = re.sub(r'(\w)-\n(\w)', r'\1\2', text)
-    
-    # Normalizing line endings
-    text = text.replace('\r\n', '\n').replace('\r', '\n')
     
     # Removing non-printable characters (except newlines and tabs)
     text = re.sub(r'[^\S\n\t]+', ' ', text)  # normalize whitespace to single space
