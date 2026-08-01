@@ -1,0 +1,82 @@
+name: Web App CI
+
+# Typecheck and build only.
+#
+# The test suite is NOT run here, and this is deliberate: tests, fixtures and
+# evaluation materials are gitignored by project instruction (CLAUDE.md 10.7),
+# so they do not exist in a CI checkout. Conformance must be run locally:
+#
+#     cd webapp && npm test
+#
+# Accepted consequence: CI cannot catch a conformance regression.
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - ppllm-studio-site
+      - ppllm-studio-web
+    paths:
+      - 'webapp/**'
+      - '.github/workflows/webapp-ci.yml'
+  pull_request:
+    paths:
+      - 'webapp/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: webapp
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: webapp/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Build
+        run: npm run build
+
+      - name: Check bundle budget
+        run: |
+          # Budget applies to the INITIAL load only — what every visitor downloads
+          # before touching a file (CLAUDE.md 10.7).
+          #
+          # Lazy chunks are deliberately excluded: pdf.js (~126 KB gz) and mammoth
+          # (~124 KB gz) are dynamically imported and only fetched when a user
+          # actually picks that file type. Summing everything would measure a
+          # download no single user ever performs.
+          total=0
+          for f in ../website/studio/assets/index-*.js ../website/studio/assets/index-*.css; do
+            [ -f "$f" ] || continue
+            size=$(gzip -c "$f" | wc -c)
+            echo "  $(basename "$f"): ${size} bytes gz"
+            total=$((total + size))
+          done
+          echo "Initial load: ${total} bytes gzipped"
+          if [ "$total" -gt 256000 ]; then
+            echo "::error::Initial load exceeds 250 KB gzipped budget (${total} bytes)"
+            exit 1
+          fi
+
+      - name: Verify no test material was committed
+        run: |
+          # Belt and braces: tests/fixtures/evaluation must never reach the repo.
+          if [ -d ../conformance ] || [ -d ../evaluation ] || [ -d tests ]; then
+            echo "::error::Test or evaluation material found in the repository."
+            exit 1
+          fi
+          echo "Clean — no test or evaluation material committed."

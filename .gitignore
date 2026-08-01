@@ -42,3 +42,28 @@ FADS Docs/
 
 # Keys (never commit private keys)
 *.pem
+
+# =============================================================================
+# Browser port (PPLLM Studio Web) — see CLAUDE.md section 10
+# =============================================================================
+
+# Node dependencies and build scratch
+webapp/node_modules/
+webapp/dist/
+webapp/.vite/
+webapp/playwright-report/
+webapp/test-results/
+webapp/coverage/
+# Vendored Tesseract assets — regenerate with: npm run vendor:tesseract
+webapp/public/tesseract/
+
+# TESTS AND EVALUATION — LOCAL ONLY, NEVER PUSHED
+# Per project instruction (CLAUDE.md section 10.7). Consequence accepted:
+# CI cannot run these; it does typecheck + build only.
+conformance/
+evaluation/
+webapp/tests/
+webapp/**/*.test.ts
+webapp/**/*.test.tsx
+webapp/**/*.spec.ts
+webapp/**/*.spec.tsx

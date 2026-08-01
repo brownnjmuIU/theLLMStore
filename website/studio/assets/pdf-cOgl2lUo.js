@@ -1,0 +1,6 @@
+const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/pdf-DW6gK2TV.js","assets/index-CrhLR2tw.js","assets/index-CHW9QUVU.css"])))=>i.map(i=>d[i]);
+import{t as e}from"./index-CrhLR2tw.js";var t=.1,n=.5,r=!1;async function i(){let t=await e(()=>import(`./pdf-DW6gK2TV.js`),__vite__mapDeps([0,1,2]));if(!r){let n=t.GlobalWorkerOptions;n.workerSrc||=(await e(()=>import(`./pdf.worker-QmdEXvDk.js`),[])).default,r=!0}return t}async function a(e){let r=(await i()).getDocument({data:new Uint8Array(e),disableFontFace:!0,useSystemFonts:!1}),a=await r.promise;try{let e=[];for(let r=1;r<=a.numPages;r+=1){let i=await a.getPage(r),o=await i.getTextContent(),s=``,c=null,l=null,u=0,d=!1;for(let e of o.items){if(!(`str`in e))continue;let r=e.transform[4],i=e.transform[5],a=Math.hypot(e.transform[2],e.transform[3])||10;!d&&l!==null&&c!==null&&(Math.abs(i-l)>a*n?s+=`
+`:r-(c+u)>a*t&&(s+=` `)),s+=e.str,d=e.hasEOL===!0,d&&(s+=`
+`),c=r,l=i,u=e.width??0}e.push(s),i.cleanup()}return{text:e.join(`
+
+`).trim(),page_count:a.numPages}}finally{await r.destroy()}}export{a as extractTextFromPdf};
