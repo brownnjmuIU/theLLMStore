@@ -11,8 +11,15 @@ if (!container) {
   throw new Error('Root element #root not found');
 }
 
+/**
+ * When mounted inside an existing page (website/ppllm-browser.html), that page
+ * already provides the site header, hero and footer — so the app must not render
+ * its own, or the visitor sees two navigation bars.
+ */
+const embedded = container.hasAttribute('data-embedded');
+
 createRoot(container).render(
   <StrictMode>
-    <App />
+    <App embedded={embedded} />
   </StrictMode>
 );

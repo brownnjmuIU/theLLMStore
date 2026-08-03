@@ -3,37 +3,30 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>PPLLM Studio | theLLMStore</title>
+    <title>Browser PPLLM Studio | theLLMStore</title>
     <meta
       name="description"
-      content="PPLLM Studio runs in your browser: prepare your own files for AI locally, with nothing uploaded and no install required."
+      content="PPLLM Studio running in your browser: privacy-first file processing, cleaning, chunking, and optional encryption. Files are read on your own device and never uploaded."
     >
-
-    <!--
-      RETIRED - Week 22 simulation.
-
-      This page previously hosted a front-end simulation: hardcoded sample data,
-      no real file reading, no processing. It existed because there was no
-      working browser version yet.
-
-      There is one now, at /studio/ - it runs the same extract / clean / chunk /
-      encrypt pipeline as the desktop app, entirely in the browser. Keeping a
-      convincing fake alongside the real thing at similar URLs invites exactly
-      the confusion TRANSFER.md warns about, so this address now forwards to the
-      working application.
-
-      The URL is preserved rather than deleted because it is published in
-      TRANSFER.md and may already have been shared with reviewers.
-    -->
-    <meta http-equiv="refresh" content="0; url=studio/">
-    <link rel="canonical" href="https://thellmstore.com/studio/">
     <link rel="icon" href="data:,">
     <link rel="stylesheet" href="styles.css?v=11">
-    <script>
-      // Runs before the meta refresh in most browsers. replace() rather than
-      // assign() so the Back button does not bounce the visitor straight here.
-      window.location.replace('studio/');
-    </script>
+
+    <!--
+      The Week 22 simulation that used to live here has been replaced by the real
+      application. Page structure, hero copy and buttons are unchanged; only the
+      demo section below now hosts the working app instead of a mock-up.
+
+      The app is mounted from the build output in studio/. Those entry filenames
+      are deliberately stable (see webapp/vite.config.ts) so this page does not
+      break every time the app is rebuilt.
+
+      DO NOT add a ?v= query to the module script below. It loads cleanly but
+      silently breaks the app: the click handlers update one instance of the
+      module graph while the DOM is rendered by another, so extraction appears
+      to do nothing at all, with no console error. Cache-bust by changing the
+      filename instead.
+    -->
+    <link rel="stylesheet" href="studio/assets/ppllm-app.css">
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to main content</a>
@@ -46,7 +39,7 @@
         <div class="nav-links" aria-label="Page sections">
           <a href="index.html#resources">Resources</a>
           <a href="ppllm-studio.html">Windows App</a>
-          <a href="studio/">Browser App</a>
+          <a href="#browser-demo">Browser App</a>
         </div>
       </nav>
     </header>
@@ -54,22 +47,50 @@
     <main id="main">
       <section class="hero product-hero browser-hero rounded-section" aria-labelledby="browser-title">
         <div class="hero-inner">
-          <p class="section-kicker">Now available</p>
-          <h1 id="browser-title">PPLLM Studio runs in your browser.</h1>
+          <p class="section-kicker">PPLLM Studio in your browser</p>
+          <h1 id="browser-title">Explore the local-first workflow in the browser.</h1>
           <p class="hero-copy">
-            This address previously showed a simulated walkthrough. The working
-            application has replaced it - the same local-first workflow, but it
-            actually reads and processes your files.
+            PPLLM Studio runs entirely in this tab: file preparation, cleaning,
+            chunking, and optional encryption. Your files are read on your own
+            device and are never uploaded.
           </p>
           <div class="hero-actions" aria-label="Primary actions">
-            <a class="button primary" href="studio/">Open PPLLM Studio</a>
-            <a class="button secondary" href="index.html">Back to theLLMStore</a>
+            <a class="button primary" href="#browser-demo">Launch browser app</a>
+            <a class="button secondary" href="ppllm-studio.html">View Windows version</a>
           </div>
-          <p class="fine-print">
-            If you are not redirected automatically, use the button above.
-          </p>
         </div>
       </section>
+
+      <section
+        class="section rounded-section browser-app-section"
+        id="browser-demo"
+        aria-labelledby="demo-title"
+      >
+        <h2 id="demo-title" class="section-heading">Prepare a file</h2>
+
+        <!--
+          data-embedded tells the app this page already provides the site header,
+          hero and footer, so it renders only the workspace.
+        -->
+        <div id="root" data-embedded></div>
+
+        <noscript>
+          <div class="note-panel">
+            <h3>JavaScript is required</h3>
+            <p>
+              PPLLM Studio processes your files inside your own browser, which
+              needs JavaScript enabled. Nothing is sent to a server either way.
+            </p>
+          </div>
+        </noscript>
+      </section>
     </main>
+
+    <footer class="site-footer">
+      <span class="footer-brand">theLLMStore</span>
+      <p>Privacy-first local AI resources for learning, research, and responsible public use.</p>
+    </footer>
+
+    <script type="module" src="studio/assets/ppllm-app.js"></script>
   </body>
 </html>

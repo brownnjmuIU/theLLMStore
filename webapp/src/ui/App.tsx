@@ -57,7 +57,7 @@ const STEPS: { key: Step; label: string; hint: string }[] = [
 
 const ACCEPT = SUPPORTED_EXTENSIONS.map((e) => `.${e}`).join(',');
 
-export function App() {
+export function App({ embedded = false }: { embedded?: boolean }) {
   const [step, setStep] = useState<Step>('ingest');
   const [status, setStatus] = useState<Status>('idle');
   const [statusNote, setStatusNote] = useState('Ready');
@@ -221,19 +221,25 @@ export function App() {
 
   return (
     <>
-      <header className="site-header">
-        <nav className="nav">
-          <a className="brand" href="/">
-            theLLMStore
-          </a>
-          <div className="nav-links">
-            <a href="/ppllm-studio.html">Desktop app</a>
-            <a href="/ppllm-browser.html">Concept demo</a>
-          </div>
-        </nav>
-      </header>
+      {/* The host page supplies its own header when this is embedded. */}
+      {!embedded && (
+        <header className="site-header">
+          <nav className="nav">
+            <a className="brand" href="/">
+              theLLMStore
+            </a>
+            <div className="nav-links">
+              <a href="/ppllm-studio.html">Windows app</a>
+              <a href="/index.html">Resources</a>
+            </div>
+          </nav>
+        </header>
+      )}
 
-      <main id="main" className="section rounded-section">
+      <div
+        id={embedded ? undefined : 'main'}
+        className={embedded ? undefined : 'section rounded-section'}
+      >
         <div className="browser-app">
           <div className="browser-app-topbar">
             <div>
@@ -645,7 +651,7 @@ export function App() {
             </div>
           </div>
         </div>
-      </main>
+      </div>
 
       {pendingSensitive && (
         <div className="source-modal" role="dialog" aria-modal="true">
