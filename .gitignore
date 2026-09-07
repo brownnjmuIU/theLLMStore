@@ -67,3 +67,20 @@ webapp/**/*.test.ts
 webapp/**/*.test.tsx
 webapp/**/*.spec.ts
 webapp/**/*.spec.tsx
+
+# Personal Claude Code context, never commit
+CLAUDE.local.md
+
+# =============================================================================
+# Chatbot (chat/) — see CLAUDE.local.md section 4
+# =============================================================================
+
+# Secrets. The LLM API key lives in chat/.env locally and in Render's
+# environment settings in production. It must NEVER reach a commit.
+# .env.example is the committed template and carries no real values.
+.env
+.env.*
+!.env.example
+
+# Node dependencies
+chat/node_modules/
