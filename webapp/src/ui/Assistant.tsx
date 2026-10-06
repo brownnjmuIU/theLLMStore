@@ -88,7 +88,7 @@ export function Assistant({ chunks }: { chunks: ChunkArtifact | null }) {
     setLoadNote('Starting…');
     setProgress(0);
     try {
-      const webllm = await import('@mlc-ai/web-llm');
+      const webllm = await import('./webllm');
       engine.current = await webllm.CreateMLCEngine(modelId, {
         initProgressCallback: (report) => {
           setLoadNote(report.text);
