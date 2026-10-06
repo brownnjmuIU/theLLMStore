@@ -35,6 +35,7 @@ import {
   type StoredArtifact,
 } from '../storage/db';
 import { processInWorker } from '../workers/client';
+import { Assistant } from './Assistant';
 import './app.css';
 
 /**
@@ -45,13 +46,14 @@ import './app.css';
  * third step was "Assistant", which is out of scope for the parity port.
  */
 
-type Step = 'ingest' | 'process' | 'artifacts' | 'audit';
+type Step = 'ingest' | 'process' | 'artifacts' | 'assistant' | 'audit';
 type Status = 'idle' | 'working' | 'ready' | 'error';
 
 const STEPS: { key: Step; label: string; hint: string }[] = [
   { key: 'ingest', label: 'Ingest', hint: 'Choose a file' },
   { key: 'process', label: 'Process', hint: 'Clean and chunk' },
   { key: 'artifacts', label: 'Artifacts', hint: 'Download output' },
+  { key: 'assistant', label: 'Assistant', hint: 'Ask your document' },
   { key: 'audit', label: 'Audit', hint: 'What happened' },
 ];
 
@@ -586,6 +588,10 @@ export function App({ embedded = false }: { embedded?: boolean }) {
                   )}
                 </section>
               )}
+
+                            <div hidden={step !== 'assistant'}>
+                <Assistant chunks={chunks} />
+              </div>
 
               {step === 'audit' && (
                 <section className="browser-panel active">
