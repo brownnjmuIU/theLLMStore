@@ -16,6 +16,7 @@
     "vendor:tesseract": "node scripts/vendor-tesseract.mjs"
   },
   "dependencies": {
+    "@mlc-ai/web-llm": "^0.2.85",
     "exifr": "^7.1.3",
     "idb": "^8.0.3",
     "jszip": "^3.10.1",
