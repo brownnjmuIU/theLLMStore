@@ -42,8 +42,7 @@ import './app.css';
  * Reuses the class names in website/styles.css rather than introducing a second
  * design system. Small additions live in app.css, using the same design tokens.
  *
- * Step rail: Ingest / Process / Artifacts / Audit. The original simulation's
- * third step was "Assistant", which is out of scope for the parity port.
+ * Step rail: Ingest / Process / Artifacts / Assistant / Audit.
  */
 
 type Step = 'ingest' | 'process' | 'artifacts' | 'assistant' | 'audit';
@@ -157,7 +156,11 @@ export function App({ embedded = false }: { embedded?: boolean }) {
 
       setRaw(artifact);
       setStatus('ready');
-      setStatusNote(`Extracted ${artifact.text.length.toLocaleString()} characters`);
+      setStatusNote(
+        artifact.text.trim().length === 0
+          ? 'No text found. This looks like a scanned page: upload a screenshot of it as PNG or JPG to read it with OCR.'
+          : `Extracted ${artifact.text.length.toLocaleString()} characters`
+      );
       record('read', 'local_file', file.name, 'allow', `extracted_${artifact.text.length}_chars`);
       setStep('process');
     } catch (error) {
@@ -293,9 +296,9 @@ export function App({ embedded = false }: { embedded?: boolean }) {
                         aria-label="Choose a file to process"
                       />
                       <p>
-                        PDF, Word (.docx), PowerPoint (.pptx) and platform exports (.json).
-                        Images need OCR and video needs a speech model — both stay in the
-                        desktop app for now.
+                        PDF, Word (.docx), PowerPoint (.pptx), images (.png, .jpg, read with
+                        OCR) and platform exports (.json). Video needs a speech model, so it
+                        stays in the desktop app for now.
                       </p>
                     </div>
                   </div>
@@ -484,10 +487,20 @@ export function App({ embedded = false }: { embedded?: boolean }) {
                         ))}
                       </div>
 
+                      <div className="next-step">
+                        <div>
+                          <strong>Next: ask questions about this document</strong>
+                          <p>The Assistant reads these chunks with an AI model running in this tab.</p>
+                        </div>
+                        <button type="button" className="button primary" onClick={() => setStep('assistant')}>
+                          Continue to Assistant →
+                        </button>
+                      </div>
+
                       <div className="button-row">
                         <button
                           type="button"
-                          className="button primary"
+                          className="button secondary"
                           onClick={() => downloadArtifact(chunks, chunkArtifactFilename(chunks))}
                         >
                           Download chunk JSON
@@ -589,7 +602,7 @@ export function App({ embedded = false }: { embedded?: boolean }) {
                 </section>
               )}
 
-                            <div hidden={step !== 'assistant'}>
+              <div hidden={step !== 'assistant'}>
                 <Assistant chunks={chunks} />
               </div>
 

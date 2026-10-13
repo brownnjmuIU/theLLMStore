@@ -1,0 +1,365 @@
+{
+ "article_single_column.pdf": [
+  {
+   "q": "What is this paper about?",
+   "expect": [
+    "generative ai",
+    "analyst"
+   ]
+  },
+  {
+   "q": "Summarize the article",
+   "expect": [
+    "productiv"
+   ]
+  },
+  {
+   "q": "How many analysts were in the experiment?",
+   "expect": [
+    "412"
+   ]
+  },
+  {
+   "q": "What methods did the authors use?",
+   "expect": [
+    "randomly assigned",
+    "least squares"
+   ]
+  },
+  {
+   "q": "What are the main findings?",
+   "expect": [
+    "23 percent"
+   ]
+  },
+  {
+   "q": "What were the results?",
+   "expect": [
+    "23 percent"
+   ]
+  },
+  {
+   "q": "How much did the error rate fall?",
+   "expect": [
+    "4.4"
+   ]
+  },
+  {
+   "q": "What are the limitations of the study?",
+   "expect": [
+    "single bank"
+   ]
+  },
+  {
+   "q": "What should managers do?",
+   "expect": [
+    "verification training"
+   ]
+  },
+  {
+   "q": "Who benefits most from AI?",
+   "expect": [
+    "least experienced",
+    "bottom quartile",
+    "less than two years"
+   ]
+  },
+  {
+   "q": "What does the conclusion say?",
+   "expect": [
+    "raised novice"
+   ]
+  },
+  {
+   "q": "Did workers become more efficient?",
+   "expect": [
+    "23 percent",
+    "productiv"
+   ]
+  },
+  {
+   "q": "What's the takeaway?",
+   "expect": [
+    "productiv",
+    "ai assistance"
+   ]
+  },
+  {
+   "q": "Who wrote it?",
+   "expect": [
+    "natarajan"
+   ]
+  },
+  {
+   "q": "What are the limitations? Who wrote it?",
+   "expect": [
+    "single bank"
+   ]
+  },
+  {
+   "q": "What are the limitations? Who wrote it?",
+   "expect": [
+    "natarajan"
+   ]
+  }
+ ],
+ "article_two_column.pdf": [
+  {
+   "q": "What is this paper about?",
+   "expect": [
+    "generative ai",
+    "analyst"
+   ]
+  },
+  {
+   "q": "Summarize the article",
+   "expect": [
+    "productiv"
+   ]
+  },
+  {
+   "q": "How many analysts were in the experiment?",
+   "expect": [
+    "412"
+   ]
+  },
+  {
+   "q": "What methods did the authors use?",
+   "expect": [
+    "randomly assigned",
+    "least squares"
+   ]
+  },
+  {
+   "q": "What are the main findings?",
+   "expect": [
+    "23 percent"
+   ]
+  },
+  {
+   "q": "What were the results?",
+   "expect": [
+    "23 percent"
+   ]
+  },
+  {
+   "q": "How much did the error rate fall?",
+   "expect": [
+    "4.4"
+   ]
+  },
+  {
+   "q": "What are the limitations of the study?",
+   "expect": [
+    "single bank"
+   ]
+  },
+  {
+   "q": "What should managers do?",
+   "expect": [
+    "verification training"
+   ]
+  },
+  {
+   "q": "Who benefits most from AI?",
+   "expect": [
+    "least experienced",
+    "bottom quartile",
+    "less than two years"
+   ]
+  },
+  {
+   "q": "What does the conclusion say?",
+   "expect": [
+    "raised novice"
+   ]
+  },
+  {
+   "q": "Did workers become more efficient?",
+   "expect": [
+    "23 percent",
+    "productiv"
+   ]
+  },
+  {
+   "q": "What's the takeaway?",
+   "expect": [
+    "productiv",
+    "ai assistance"
+   ]
+  },
+  {
+   "q": "Who wrote it?",
+   "expect": [
+    "natarajan"
+   ]
+  },
+  {
+   "q": "What are the limitations? Who wrote it?",
+   "expect": [
+    "single bank"
+   ]
+  },
+  {
+   "q": "What are the limitations? Who wrote it?",
+   "expect": [
+    "natarajan"
+   ]
+  }
+ ],
+ "article_ligatures.pdf": [
+  {
+   "q": "What were the findings?",
+   "expect": [
+    "23 percent"
+   ]
+  },
+  {
+   "q": "What is the reconciliation error rate?",
+   "expect": [
+    "4.4"
+   ]
+  },
+  {
+   "q": "What are the main findings?",
+   "expect": [
+    "23 percent"
+   ]
+  }
+ ],
+ "news_saved_from_browser.pdf": [
+  {
+   "q": "How does Jev play Doom?",
+   "expect": [
+    "typed questions",
+    "parallel",
+    "weapon"
+   ]
+  },
+  {
+   "q": "How fast is Jev?",
+   "expect": [
+    "90 milliseconds"
+   ]
+  },
+  {
+   "q": "What was the confidence threshold?",
+   "expect": [
+    "0.6"
+   ]
+  },
+  {
+   "q": "Did the agent finish the level?",
+   "expect": [
+    "e1m1",
+    "3 minutes"
+   ]
+  },
+  {
+   "q": "Summarize this",
+   "expect": [
+    "doom"
+   ]
+  },
+  {
+   "q": "Why is a language model worse for this?",
+   "expect": [
+    "two seconds",
+    "free text"
+   ]
+  }
+ ],
+ "scanned_memo.pdf": [
+  {
+   "q": "Can students use AI?",
+   "expect": [
+    "brainstorming"
+   ]
+  }
+ ],
+ "tiny_memo.pdf": [
+  {
+   "q": "Where is the workshop?",
+   "expect": [
+    "hodge hall"
+   ]
+  },
+  {
+   "q": "When is it?",
+   "expect": [
+    "thursday"
+   ]
+  }
+ ],
+ "long_report_40_sections.pdf": [
+  {
+   "q": "How many businesses reported ransomware?",
+   "expect": [
+    "17 businesses"
+   ]
+  },
+  {
+   "q": "What was the median recovery cost?",
+   "expect": [
+    "48,000"
+   ]
+  },
+  {
+   "q": "What is this report about?",
+   "expect": [
+    "survey",
+    "adoption"
+   ]
+  }
+ ],
+ "spanish_article.pdf": [
+  {
+   "q": "How many students were surveyed?",
+   "expect": [
+    "1.250"
+   ]
+  },
+  {
+   "q": "\u00bfCu\u00e1ntos estudiantes fueron encuestados?",
+   "expect": [
+    "1.250"
+   ]
+  }
+ ],
+ "table_heavy.pdf": [
+  {
+   "q": "What was software revenue in Q4?",
+   "expect": [
+    "4.8m"
+   ]
+  },
+  {
+   "q": "Which segment earned the most?",
+   "expect": [
+    "software"
+   ]
+  }
+ ],
+ "password_protected.pdf": [
+  {
+   "q": "Where is the workshop?",
+   "expect": [
+    "hodge hall"
+   ]
+  }
+ ],
+ "slides_exported.pdf": [
+  {
+   "q": "Why do models hallucinate?",
+   "expect": [
+    "predict likely words"
+   ]
+  },
+  {
+   "q": "How long is a token?",
+   "expect": [
+    "4 characters"
+   ]
+  }
+ ]
+}

@@ -193,3 +193,10 @@
 .assistant-msg .chunk-row { margin-top: 0.5rem; }
 .assistant-ask { display: flex; gap: 0.75rem; }
 .assistant-ask input { flex: 1; padding: 0.8rem 1rem; border: 1px solid #d6e5e1; border-radius: 12px; font: inherit; }
+/* Week 3: Artifacts -> Assistant hand-off and Assistant notices */
+.next-step { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin: 1.25rem 0; padding: 1rem 1.25rem; border: 1px solid #0b4a45; border-radius: 16px; background: #eef7f5; }
+.next-step p { margin: 0.25rem 0 0; color: #3d5a56; }
+.assistant-notice { margin: 0.75rem 0; padding: 0.7rem 1rem; border-radius: 12px; background: #eef7f5; border: 1px solid #d6e5e1; }
+.assistant-notice.warn { background: #fff6e5; border-color: #f0c36d; }
+.assistant-how { margin-top: 0.4rem !important; font-size: 0.8rem; color: #5b726e; }
+.assistant-msg .button { margin-top: 0.6rem; }

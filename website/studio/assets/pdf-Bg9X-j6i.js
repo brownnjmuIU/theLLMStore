@@ -1,0 +1,5 @@
+import{_}from"./ppllm-app.js";const P=.1,y=.5;let g=!1;async function E(){const r=await _(()=>import("./pdf-DMRcuM1e.js"),[]);if(!g){const s=r.GlobalWorkerOptions;if(!s.workerSrc){const n=await _(()=>import("./pdf.worker-Dg1JjW3f.js"),[]);s.workerSrc=n.default}g=!0}return r}async function x(r){const n=(await E()).getDocument({data:new Uint8Array(r),disableFontFace:!0,useSystemFonts:!1});let a;try{a=await n.promise}catch(o){throw o instanceof Error&&o.name==="PasswordException"?new Error("This PDF is password-protected. Open it, save a copy without a password (or use Print to PDF), and upload that copy."):o}try{const o=[];for(let i=1;i<=a.numPages;i+=1){const u=await a.getPage(i),h=await u.getTextContent();let e="",c=null,l=null,p=0,f=!1;for(const t of h.items){if(!("str"in t))continue;const d=t.transform[4],w=t.transform[5],m=Math.hypot(t.transform[2],t.transform[3])||10;!f&&l!==null&&c!==null&&(Math.abs(w-l)>m*y?e+=`
+`:d-(c+p)>m*P&&(e+=" ")),e+=t.str,f=t.hasEOL===!0,f&&(e+=`
+`),c=d,l=w,p=t.width??0}o.push(e),u.cleanup()}return{text:o.join(`
+
+`).trim(),page_count:a.numPages}}finally{await n.destroy()}}export{x as extractTextFromPdf};
