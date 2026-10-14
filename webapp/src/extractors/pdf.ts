@@ -36,6 +36,33 @@ import type { ExtractionResult } from '../core/types';
 const WORD_GAP_RATIO = 0.1;
 const LINE_BREAK_RATIO = 0.5;
 
+/**
+ * Safari (and older iPadOS/macOS browsers) cannot loop over a ReadableStream with
+ * `for await`, which pdf.js v6 uses inside getTextContent(). Without this, every PDF
+ * fails in Safari with "undefined is not a function (near '...value of readableStream...')".
+ * Adds the missing iterator using the standard reader API. No effect in Chrome, Edge or Firefox.
+ */
+function ensureReadableStreamIteration(): void {
+  if (typeof ReadableStream === 'undefined') return;
+  const proto = ReadableStream.prototype as unknown as Record<symbol | string, unknown>;
+  if (typeof proto[Symbol.asyncIterator] === 'function') return;
+  const iterate = async function* (this: ReadableStream<unknown>) {
+    const reader = this.getReader();
+    try {
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) return;
+        yield value;
+      }
+    } finally {
+      reader.releaseLock();
+    }
+  };
+  proto[Symbol.asyncIterator] = iterate;
+  if (typeof proto.values !== 'function') proto.values = iterate;
+}
+ensureReadableStreamIteration();
+
 let workerConfigured = false;
 
 /**
@@ -77,7 +104,16 @@ export async function extractTextFromPdf(fileBytes: Uint8Array): Promise<Extract
     disableFontFace: true,
     useSystemFonts: false,
   });
-  const doc = await loadingTask.promise;
+  let doc;
+  try {
+    doc = await loadingTask.promise;
+  } catch (error) {
+    // pdf.js says "No password given", which tells a student nothing.
+    if (error instanceof Error && error.name === 'PasswordException') {
+      throw new Error('This PDF is password-protected. Open it, save a copy without a password (or use Print to PDF), and upload that copy.');
+    }
+    throw error;
+  }
 
   try {
     const pages: string[] = [];
