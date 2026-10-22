@@ -46,6 +46,7 @@ from chatbot.chunk_loader import load_chunk_artifact
 from chatbot.model_connectors import OllamaConnector
 from chatbot.rag_service import _build_prompt
 from chatbot.retriever import matched_query_terms, retrieve_relevant_chunks
+from chatbot.playground import answer_with_trace, chunk_in_memory
 
 VISIBLE_SOURCE_CHIP_LIMIT = 2
 WORKFLOW_RAIL_EXPANDED_WIDTH = 210
@@ -521,7 +522,30 @@ class AssistantWorker(QObject):
        
         except Exception as exc:
             self.failed.emit(str(exc))
+class PlaygroundWorker(QObject):
+    result_ready = Signal(object)
+    failed = Signal(str)
+    done = Signal()
 
+    def __init__(self, question: str, raw_path: str, sizes: list[int]) -> None:
+        super().__init__()
+        self.question = question
+        self.raw_path = raw_path
+        self.sizes = sizes
+
+    @Slot()
+    def run(self) -> None:
+        try:
+            for slot, size in enumerate(self.sizes):
+                chunks = chunk_in_memory(self.raw_path, size, size // 8)
+                trace = answer_with_trace(self.question, chunks)
+                trace["chunk_size"] = size
+                trace["slot"] = slot
+                self.result_ready.emit(trace)
+        except Exception as exc:
+            self.failed.emit(str(exc))
+        finally:
+            self.done.emit()
 
 class ImmediateTooltipButton(QToolButton):
     def enterEvent(self, event) -> None:
@@ -979,6 +1003,14 @@ class LLMBundlerDesktop(QMainWindow):
         action_row.addWidget(self.process_btn, stretch=2)
         action_row.addWidget(self.save_chunk_copy_btn, stretch=1)
         layout.addLayout(action_row)
+
+        self.playground_btn = QPushButton("Open Chunk Playground")
+        self.playground_btn.setToolTip(
+            "Try two chunk sizes on the same question and compare what the AI finds. "
+            "Nothing is saved."
+        )
+        self.playground_btn.clicked.connect(self.open_chunk_playground)
+        layout.addWidget(self.playground_btn)
 
         self.data_summary_frame = QFrame()
         self.data_summary_frame.setObjectName("dataSummaryFlow")
@@ -1654,6 +1686,112 @@ class LLMBundlerDesktop(QMainWindow):
         button_row.addWidget(close_btn)
         layout.addLayout(button_row)
         return dialog
+    def open_chunk_playground(self) -> None:
+        if not self.raw_artifact_path:
+            self._warn("Please ingest a document first (Step 1).")
+            return
+        if getattr(self, "playground_dialog", None) is None:
+            self.playground_dialog = self._build_playground_dialog()
+        self.playground_dialog.show()
+        self.playground_dialog.raise_()
+
+    def _build_playground_dialog(self) -> QDialog:
+        dialog = QDialog(self)
+        dialog.setObjectName("sourcePreviewDialog")
+        dialog.setWindowTitle("Chunk Playground")
+        dialog.setMinimumSize(1000, 680)
+        layout = QVBoxLayout(dialog)
+        layout.setContentsMargins(18, 18, 18, 18)
+        layout.setSpacing(10)
+
+        title = QLabel("Chunk Playground")
+        title.setObjectName("sourcePreviewTitle")
+        layout.addWidget(title)
+
+        intro = QLabel(
+            "Ask the same question with two chunk sizes. Small pieces can cut a fact in half; "
+            "large pieces can bury it in unrelated text. Watch how the pieces the AI reads, "
+            "and its answer, change. Nothing here is saved."
+        )
+        intro.setObjectName("sourcePreviewNote")
+        intro.setWordWrap(True)
+        layout.addWidget(intro)
+
+        controls = QHBoxLayout()
+        self.pg_question = QLineEdit()
+        self.pg_question.setPlaceholderText("Ask a question about your document...")
+        controls.addWidget(self.pg_question, stretch=3)
+        self.pg_size_a = QSpinBox()
+        self.pg_size_a.setRange(100, 4000)
+        self.pg_size_a.setValue(200)
+        self.pg_size_b = QSpinBox()
+        self.pg_size_b.setRange(100, 4000)
+        self.pg_size_b.setValue(1500)
+        controls.addWidget(QLabel("Size A:"))
+        controls.addWidget(self.pg_size_a)
+        controls.addWidget(QLabel("Size B:"))
+        controls.addWidget(self.pg_size_b)
+        self.pg_run_btn = QPushButton("Run both")
+        self.pg_run_btn.setObjectName("successBtn")
+        self.pg_run_btn.clicked.connect(self._run_chunk_playground)
+        controls.addWidget(self.pg_run_btn)
+        layout.addLayout(controls)
+
+        columns = QHBoxLayout()
+        self.pg_outputs = []
+        for _ in range(2):
+            box = QPlainTextEdit()
+            box.setReadOnly(True)
+            box.setPlainText("Results will appear here.")
+            columns.addWidget(box, stretch=1)
+            self.pg_outputs.append(box)
+        layout.addLayout(columns, stretch=1)
+        return dialog
+
+    def _run_chunk_playground(self) -> None:
+        question = self.pg_question.text().strip()
+        if not question:
+            self._warn("Type a question first.")
+            return
+        sizes = [self.pg_size_a.value(), self.pg_size_b.value()]
+        for box, size in zip(self.pg_outputs, sizes):
+            box.setPlainText(f"Chunk size {size}: splitting and asking the AI...")
+        self.pg_run_btn.setEnabled(False)
+
+        self.pg_thread = QThread(self)
+        self.pg_worker = PlaygroundWorker(question, self.raw_artifact_path, sizes)
+        self.pg_worker.moveToThread(self.pg_thread)
+        self.pg_thread.started.connect(self.pg_worker.run)
+        self.pg_worker.result_ready.connect(self._show_playground_result)
+        self.pg_worker.failed.connect(self._warn)
+        self.pg_worker.done.connect(self._playground_done)
+        self.pg_worker.done.connect(self.pg_thread.quit)
+        self.pg_thread.finished.connect(self.pg_worker.deleteLater)
+        self.pg_thread.finished.connect(self.pg_thread.deleteLater)
+        self.pg_thread.start()
+
+    def _show_playground_result(self, trace: dict) -> None:
+        sources = self._normalize_source_items(trace.get("sources", []))
+        total = trace.get("total_chunks", 0)
+        lines = [
+            f"CHUNK SIZE: {trace.get('chunk_size')} characters",
+            f"Document split into {total} pieces. The AI read {len(sources)} of them.",
+            f"Time: {trace.get('seconds', 0):.1f} s",
+            "",
+            "ANSWER",
+            trace.get("answer") or "(no answer)",
+            "",
+            "PIECES THE AI READ",
+        ]
+        for s in sources:
+            terms = ", ".join(s["matched_terms"]) or "none"
+            lines.append(f"Piece {s['chunk_index']} (score {s['score']}, matched: {terms})")
+            lines.append(s["text"])
+            lines.append("")
+        self.pg_outputs[trace["slot"]].setPlainText("\n".join(lines))
+
+    def _playground_done(self) -> None:
+        self.pg_run_btn.setEnabled(True)
     def _handle_chat_error(self, error_message: str) -> None:
         message = error_message
         if "Could not reach local Ollama" in message:
