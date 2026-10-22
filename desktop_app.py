@@ -1451,6 +1451,16 @@ class LLMBundlerDesktop(QMainWindow):
                 )
                 source_note.setObjectName("sourceNote")
                 self.current_assistant_layout.addWidget(source_note)
+        if self.current_assistant_layout is not None:
+            explain_btn = QPushButton("Explain this answer")
+            explain_btn.setObjectName("sourceChip")
+            explain_btn.setToolTip(
+                "See which parts of your document the AI read and the exact text it was sent."
+            )
+            explain_btn.clicked.connect(
+                lambda checked=False, t=trace: self._build_explain_dialog(t).exec()
+            )
+            self.current_assistant_layout.addWidget(explain_btn, 0, Qt.AlignLeft)
         self.current_assistant_label = None
         self.current_assistant_layout = None
         self.assistant_placeholder_visible = False
@@ -1552,7 +1562,98 @@ class LLMBundlerDesktop(QMainWindow):
         close_row.addWidget(close_btn)
         layout.addLayout(close_row)
         return dialog
+    def _build_explain_dialog(self, trace: dict) -> QDialog:
+        sources = self._normalize_source_items(trace.get("sources", []))
+        total = trace.get("total_chunks", 0)
+        used = len(sources)
 
+        dialog = QDialog(self)
+        dialog.setObjectName("sourcePreviewDialog")
+        dialog.setWindowTitle("Explain This Answer")
+        dialog.setMinimumSize(720, 560)
+        layout = QVBoxLayout(dialog)
+        layout.setContentsMargins(18, 18, 18, 18)
+        layout.setSpacing(10)
+
+        title = QLabel("Explain This Answer")
+        title.setObjectName("sourcePreviewTitle")
+        layout.addWidget(title)
+
+        if used:
+            percent = round(100 * used / total) if total else 0
+            headline_text = (
+                f"The AI read {used} of {total} pieces of your document "
+                f"(about {percent}%). It never sees the whole file, only these pieces."
+            )
+        else:
+            headline_text = (
+                "No part of your document matched this question, so nothing was sent "
+                "to the AI. 'Not found in the document' is an honest answer, not a failure."
+            )
+        headline = QLabel(headline_text)
+        headline.setObjectName("sourcePreviewReason")
+        headline.setWordWrap(True)
+        layout.addWidget(headline)
+
+        meta = QLabel(
+            f"Model: {trace.get('model', 'unknown')} · "
+            f"Time: {trace.get('seconds', 0):.1f} s"
+        )
+        meta.setObjectName("sourcePreviewMeta")
+        layout.addWidget(meta)
+
+        tabs = QTabWidget()
+        tabs.setElideMode(Qt.ElideNone)
+        tabs.tabBar().setExpanding(False)
+
+        read_box = QPlainTextEdit()
+        read_box.setReadOnly(True)
+        read_box.setPlainText(
+            "\n\n".join(
+                f"Piece {s['chunk_index']} of {total} "
+                f"(id {s['chunk_id']}, score {s['score']})\n{s['text']}"
+                for s in sources
+            )
+            or "No pieces were read."
+        )
+        tabs.addTab(read_box, "What the AI read")
+
+        why_lines = [
+            "PPLLM gives every piece a score by counting how often the keywords "
+            "in your question appear in it. It then keeps up to 4 of the highest "
+            "scoring pieces and ignores the rest.",
+            "",
+        ]
+        for s in sources:
+            terms = ", ".join(s["matched_terms"]) or "no exact keyword match"
+            why_lines.append(
+                f"Piece {s['chunk_index']}: score {s['score']}, matched words: {terms}"
+            )
+        why_box = QPlainTextEdit()
+        why_box.setReadOnly(True)
+        why_box.setPlainText("\n".join(why_lines))
+        tabs.addTab(why_box, "Why these pieces")
+
+        prompt_text = trace.get("prompt") or "Nothing was sent to the AI for this question."
+        prompt_box = QPlainTextEdit()
+        prompt_box.setReadOnly(True)
+        prompt_box.setPlainText(prompt_text)
+        tabs.addTab(prompt_box, "Exact text sent to the AI")
+
+        layout.addWidget(tabs, stretch=1)
+
+        button_row = QHBoxLayout()
+        copy_btn = QPushButton("Copy prompt")
+        copy_btn.clicked.connect(
+            lambda: QApplication.clipboard().setText(prompt_text)
+        )
+        button_row.addWidget(copy_btn)
+        button_row.addStretch(1)
+        close_btn = QPushButton("Close")
+        close_btn.clicked.connect(dialog.accept)
+        button_row.addWidget(close_btn)
+        layout.addLayout(button_row)
+        return dialog
     def _handle_chat_error(self, error_message: str) -> None:
         message = error_message
         if "Could not reach local Ollama" in message:
