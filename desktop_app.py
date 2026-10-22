@@ -1,4 +1,5 @@
 import shutil
+import time
 from pathlib import Path
 
 from PySide6.QtCore import QObject, Qt, QThread, QTimer, QUrl, Signal, Slot
@@ -458,7 +459,7 @@ SUMMARY_FLOW_STEP_DELAY_MS = 800
 
 class AssistantWorker(QObject):
     token_received = Signal(str)
-    finished = Signal(list)
+    finished = Signal(object)
     failed = Signal(str)
 
     def __init__(self, question: str, chunks_path: str) -> None:
@@ -473,36 +474,51 @@ class AssistantWorker(QObject):
     @Slot()
     def run(self) -> None:
         try:
+            started = time.perf_counter()
             chunks = load_chunk_artifact(self.chunks_path)
             retrieved = retrieve_relevant_chunks(self.question, chunks)
+            connector = OllamaConnector()
+            trace = {
+                "question": self.question,
+                "total_chunks": len(chunks),
+                "model": getattr(connector, "model", "unknown"),
+                "prompt": "",
+                "sources": [],
+                "seconds": 0.0,
+            }
             if not retrieved:
                 self.token_received.emit(
                     "I could not find relevant information in the processed chunks."
                 )
-                self.finished.emit([])
+                trace["seconds"] = time.perf_counter() - started
+                self.finished.emit(trace)
                 return
 
             context_blocks = [
                 f"[{item.chunk.chunk_id}] {item.chunk.text}" for item in retrieved
             ]
             prompt = _build_prompt(self.question, "\n\n".join(context_blocks))
-            for token in OllamaConnector().stream(prompt):
+            trace["prompt"] = prompt
+            for token in connector.stream(prompt):
                 if self.cancel_requested:
                     break
                 self.token_received.emit(token)
-            self.finished.emit(
-                [
-                    {
-                        "chunk_id": item.chunk.chunk_id,
-                        "source_filename": item.chunk.source_filename,
-                        "matched_terms": matched_query_terms(
-                            self.question, item.chunk.text
-                        ),
-                        "text": item.chunk.text,
-                    }
-                    for item in retrieved
-                ]
-            )
+            trace["sources"] = [
+                {
+                    "chunk_id": item.chunk.chunk_id,
+                    "chunk_index": item.chunk.chunk_index,
+                    "score": item.score,
+                    "source_filename": item.chunk.source_filename,
+                    "matched_terms": matched_query_terms(
+                        self.question, item.chunk.text
+                    ),
+                    "text": item.chunk.text,
+                }
+                for item in retrieved
+            ]
+            trace["seconds"] = time.perf_counter() - started
+            self.finished.emit(trace)
+       
         except Exception as exc:
             self.failed.emit(str(exc))
 
@@ -1407,7 +1423,12 @@ class LLMBundlerDesktop(QMainWindow):
             )
         self._scroll_chat_to_bottom()
 
-    def _finish_chat_response(self, sources: list) -> None:
+    def _finish_chat_response(self, trace: dict) -> None:
+        sources = trace.get("sources", [])
+        self.last_trace = trace
+        print("TRACE", trace.get("total_chunks"), trace.get("model"),
+              round(trace.get("seconds", 0), 1),
+              [(s["chunk_id"], s["score"]) for s in sources])
         source_items = self._normalize_source_items(sources)
         if source_items and self.current_assistant_layout is not None:
             visible_sources = source_items[:VISIBLE_SOURCE_CHIP_LIMIT]
@@ -1448,6 +1469,8 @@ class LLMBundlerDesktop(QMainWindow):
                             str(term) for term in source.get("matched_terms", [])
                         ],
                         "text": str(source.get("text", "")),
+                        "chunk_index": int(source.get("chunk_index", -1)),
+                        "score": int(source.get("score", 0)),
                     }
                 )
             else:
@@ -1457,6 +1480,8 @@ class LLMBundlerDesktop(QMainWindow):
                         "source_filename": "",
                         "matched_terms": [],
                         "text": "",
+                        "chunk_index": -1,
+                        "score": 0,
                     }
                 )
         return [item for item in source_items if item["chunk_id"]]
