@@ -6,6 +6,7 @@ from PySide6.QtCore import QObject, Qt, QThread, QTimer, QUrl, Signal, Slot
 from PySide6.QtGui import QDesktopServices
 from PySide6.QtWidgets import (
     QApplication,
+    QComboBox,
     QCheckBox,
     QDialog,
     QFileDialog,
@@ -46,7 +47,13 @@ from chatbot.chunk_loader import load_chunk_artifact
 from chatbot.model_connectors import OllamaConnector
 from chatbot.rag_service import _build_prompt
 from chatbot.retriever import matched_query_terms, retrieve_relevant_chunks
-from chatbot.playground import answer_with_trace, chunk_in_memory
+from chatbot.playground import (
+    answer_with_trace,
+    ask_model,
+    build_context,
+    chunk_in_memory,
+    list_local_models,
+)
 
 VISIBLE_SOURCE_CHIP_LIMIT = 2
 WORKFLOW_RAIL_EXPANDED_WIDTH = 210
@@ -546,7 +553,34 @@ class PlaygroundWorker(QObject):
             self.failed.emit(str(exc))
         finally:
             self.done.emit()
+class CompareWorker(QObject):
+    context_ready = Signal(object)
+    result_ready = Signal(object)
+    failed = Signal(str)
+    done = Signal()
 
+    def __init__(self, question: str, chunks_path: str, models: list[str]) -> None:
+        super().__init__()
+        self.question = question
+        self.chunks_path = chunks_path
+        self.models = models
+
+    @Slot()
+    def run(self) -> None:
+        try:
+            chunks = load_chunk_artifact(self.chunks_path)
+            context = build_context(self.question, chunks)
+            self.context_ready.emit(context)
+            if not context["prompt"]:
+                return
+            for slot, model in enumerate(self.models):
+                result = ask_model(context["prompt"], model)
+                result["slot"] = slot
+                self.result_ready.emit(result)
+        except Exception as exc:
+            self.failed.emit(str(exc))
+        finally:
+            self.done.emit()
 class ImmediateTooltipButton(QToolButton):
     def enterEvent(self, event) -> None:
         tooltip = self.toolTip()
@@ -1010,7 +1044,16 @@ class LLMBundlerDesktop(QMainWindow):
             "Nothing is saved."
         )
         self.playground_btn.clicked.connect(self.open_chunk_playground)
-        layout.addWidget(self.playground_btn)
+        self.compare_btn = QPushButton("Open Model Comparison")
+        self.compare_btn.setToolTip(
+            "Ask a small and a large model the same question and compare speed and answers."
+        )
+        self.compare_btn.clicked.connect(self.open_model_comparison)
+        lab_row = QHBoxLayout()
+        lab_row.setSpacing(8)
+        lab_row.addWidget(self.playground_btn, stretch=1)
+        lab_row.addWidget(self.compare_btn, stretch=1)
+        layout.addLayout(lab_row)
 
         self.data_summary_frame = QFrame()
         self.data_summary_frame.setObjectName("dataSummaryFlow")
@@ -1792,6 +1835,152 @@ class LLMBundlerDesktop(QMainWindow):
 
     def _playground_done(self) -> None:
         self.pg_run_btn.setEnabled(True)
+    def open_model_comparison(self) -> None:
+        if not getattr(self, "latest_chunks_path", None):
+            self._warn("Please process your document first (Step 2).")
+            return
+        try:
+            models = list_local_models()
+        except Exception:
+            self._warn("Could not reach Ollama. Start Ollama and try again.")
+            return
+        if len(models) < 2:
+            self._warn(
+                "Model Comparison needs at least two local models.\n\n"
+                "Install a small one in Terminal:  ollama pull llama3.2:1b"
+            )
+            return
+        if getattr(self, "compare_dialog", None) is None:
+            self.compare_dialog = self._build_compare_dialog()
+        self._fill_model_choices(models)
+        self.compare_dialog.show()
+        self.compare_dialog.raise_()
+
+    def _build_compare_dialog(self) -> QDialog:
+        dialog = QDialog(self)
+        dialog.setObjectName("sourcePreviewDialog")
+        dialog.setWindowTitle("Model Comparison")
+        dialog.setMinimumSize(1000, 680)
+        layout = QVBoxLayout(dialog)
+        layout.setContentsMargins(18, 18, 18, 18)
+        layout.setSpacing(10)
+
+        title = QLabel("Model Comparison")
+        title.setObjectName("sourcePreviewTitle")
+        layout.addWidget(title)
+
+        intro = QLabel(
+            "Both models receive exactly the same pieces of your document, so only the model "
+            "changes. Bigger models usually answer better but are slower and need a stronger "
+            "computer. The first run of each model includes time to load it into memory."
+        )
+        intro.setObjectName("sourcePreviewNote")
+        intro.setWordWrap(True)
+        layout.addWidget(intro)
+
+        controls = QHBoxLayout()
+        self.cmp_question = QLineEdit()
+        self.cmp_question.setPlaceholderText("Ask a question about your document...")
+        controls.addWidget(self.cmp_question, stretch=3)
+        self.cmp_model_a = QComboBox()
+        self.cmp_model_b = QComboBox()
+        controls.addWidget(QLabel("Model A:"))
+        controls.addWidget(self.cmp_model_a)
+        controls.addWidget(QLabel("Model B:"))
+        controls.addWidget(self.cmp_model_b)
+        self.cmp_run_btn = QPushButton("Compare")
+        self.cmp_run_btn.setObjectName("successBtn")
+        self.cmp_run_btn.clicked.connect(self._run_model_comparison)
+        controls.addWidget(self.cmp_run_btn)
+        layout.addLayout(controls)
+
+        self.cmp_context_label = QLabel("")
+        self.cmp_context_label.setObjectName("sourcePreviewReason")
+        self.cmp_context_label.setWordWrap(True)
+        layout.addWidget(self.cmp_context_label)
+
+        columns = QHBoxLayout()
+        self.cmp_outputs = []
+        for _ in range(2):
+            box = QPlainTextEdit()
+            box.setReadOnly(True)
+            box.setPlainText("Results will appear here.")
+            columns.addWidget(box, stretch=1)
+            self.cmp_outputs.append(box)
+        layout.addLayout(columns, stretch=1)
+        return dialog
+
+    def _fill_model_choices(self, models: list[dict]) -> None:
+        ordered = sorted(models, key=lambda item: item["size_gb"])
+        self.cmp_sizes = {item["name"]: item["size_gb"] for item in ordered}
+        for combo in (self.cmp_model_a, self.cmp_model_b):
+            combo.clear()
+            combo.addItems([item["name"] for item in ordered])
+        self.cmp_model_a.setCurrentIndex(0)
+        self.cmp_model_b.setCurrentIndex(len(ordered) - 1)
+
+    def _run_model_comparison(self) -> None:
+        question = self.cmp_question.text().strip()
+        if not question:
+            self._warn("Type a question first.")
+            return
+        models = [self.cmp_model_a.currentText(), self.cmp_model_b.currentText()]
+        for box, model in zip(self.cmp_outputs, models):
+            box.setPlainText(f"{model}: waiting for its turn...")
+        self.cmp_context_label.setText("Finding the relevant pieces of your document...")
+        self.cmp_run_btn.setEnabled(False)
+
+        self.cmp_thread = QThread(self)
+        self.cmp_worker = CompareWorker(question, self.latest_chunks_path, models)
+        self.cmp_worker.moveToThread(self.cmp_thread)
+        self.cmp_thread.started.connect(self.cmp_worker.run)
+        self.cmp_worker.context_ready.connect(self._show_compare_context)
+        self.cmp_worker.result_ready.connect(self._show_compare_result)
+        self.cmp_worker.failed.connect(self._warn)
+        self.cmp_worker.done.connect(self._compare_done)
+        self.cmp_worker.done.connect(self.cmp_thread.quit)
+        self.cmp_thread.finished.connect(self.cmp_worker.deleteLater)
+        self.cmp_thread.finished.connect(self.cmp_thread.deleteLater)
+        self.cmp_thread.start()
+
+    def _show_compare_context(self, context: dict) -> None:
+        used = len(context.get("sources", []))
+        total = context.get("total_chunks", 0)
+        if context.get("prompt"):
+            self.cmp_context_label.setText(
+                f"Both models receive the exact same text: {used} of {total} pieces "
+                "of your document plus your question."
+            )
+        else:
+            self.cmp_context_label.setText(
+                "No part of your document matched this question, so nothing was sent "
+                "to either model. Try a different question."
+            )
+            for box in self.cmp_outputs:
+                box.setPlainText("Nothing was sent to this model.")
+
+    def _show_compare_result(self, result: dict) -> None:
+        model = result.get("model", "")
+        size_gb = getattr(self, "cmp_sizes", {}).get(model, 0)
+        lines = [
+            f"MODEL: {model}  ({size_gb:.1f} GB on disk)",
+            f"Total time: {result.get('seconds', 0):.1f} s "
+            f"(of which {result.get('load_seconds', 0):.1f} s loading the model)",
+            f"Writing speed: {result.get('tokens_per_second', 0):.1f} tokens per second "
+            f"({result.get('tokens', 0)} tokens written)",
+            "",
+            "ANSWER",
+            result.get("answer") or "(no answer)",
+        ]
+        self.cmp_outputs[result["slot"]].setPlainText("\n".join(lines))
+        next_slot = result["slot"] + 1
+        if next_slot < len(self.cmp_outputs):
+            self.cmp_outputs[next_slot].setPlainText(
+                f"{self.cmp_model_b.currentText()}: running now..."
+            )
+
+    def _compare_done(self) -> None:
+        self.cmp_run_btn.setEnabled(True)
     def _handle_chat_error(self, error_message: str) -> None:
         message = error_message
         if "Could not reach local Ollama" in message:

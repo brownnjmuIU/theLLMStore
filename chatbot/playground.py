@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import json
 import time
+import urllib.request
 
 from chatbot.chunk_loader import ChunkRecord
 from chatbot.model_connectors import OllamaConnector
@@ -82,3 +84,66 @@ def answer_with_trace(question: str, chunks: list[ChunkRecord]) -> dict:
     ]
     trace["seconds"] = time.perf_counter() - started
     return trace
+OLLAMA_URL = "http://127.0.0.1:11434"
+
+
+def list_local_models() -> list[dict]:
+    """Ask Ollama which models are installed and how big they are."""
+    with urllib.request.urlopen(f"{OLLAMA_URL}/api/tags", timeout=5) as response:
+        data = json.loads(response.read().decode("utf-8"))
+    return [
+        {"name": item["name"], "size_gb": item.get("size", 0) / 1e9}
+        for item in data.get("models", [])
+    ]
+
+
+def build_context(question: str, chunks: list[ChunkRecord]) -> dict:
+    """Retrieve once, so every model receives the exact same prompt."""
+    retrieved = retrieve_relevant_chunks(question, chunks)
+    sources = [
+        {
+            "chunk_id": item.chunk.chunk_id,
+            "chunk_index": item.chunk.chunk_index,
+            "score": item.score,
+            "source_filename": item.chunk.source_filename,
+            "matched_terms": matched_query_terms(question, item.chunk.text),
+            "text": item.chunk.text,
+        }
+        for item in retrieved
+    ]
+    prompt = ""
+    if retrieved:
+        context_blocks = [f"[{item.chunk.chunk_id}] {item.chunk.text}" for item in retrieved]
+        prompt = _build_prompt(question, "\n\n".join(context_blocks))
+    return {
+        "question": question,
+        "total_chunks": len(chunks),
+        "prompt": prompt,
+        "sources": sources,
+    }
+
+
+def ask_model(prompt: str, model: str) -> dict:
+    """Send one prompt to one model and keep Ollama's timing statistics."""
+    payload = json.dumps({"model": model, "prompt": prompt, "stream": False}).encode("utf-8")
+    request = urllib.request.Request(
+        f"{OLLAMA_URL}/api/generate",
+        data=payload,
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    started = time.perf_counter()
+    with urllib.request.urlopen(request, timeout=300) as response:
+        data = json.loads(response.read().decode("utf-8"))
+    seconds = time.perf_counter() - started
+
+    tokens = data.get("eval_count", 0)
+    eval_seconds = data.get("eval_duration", 0) / 1e9
+    return {
+        "model": model,
+        "answer": str(data.get("response", "")).strip(),
+        "seconds": seconds,
+        "load_seconds": data.get("load_duration", 0) / 1e9,
+        "tokens": tokens,
+        "tokens_per_second": tokens / eval_seconds if eval_seconds else 0.0,
+    }
