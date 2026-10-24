@@ -1501,9 +1501,7 @@ class LLMBundlerDesktop(QMainWindow):
     def _finish_chat_response(self, trace: dict) -> None:
         sources = trace.get("sources", [])
         self.last_trace = trace
-        print("TRACE", trace.get("total_chunks"), trace.get("model"),
-              round(trace.get("seconds", 0), 1),
-              [(s["chunk_id"], s["score"]) for s in sources])
+    
         source_items = self._normalize_source_items(sources)
         if source_items and self.current_assistant_layout is not None:
             visible_sources = source_items[:VISIBLE_SOURCE_CHIP_LIMIT]
