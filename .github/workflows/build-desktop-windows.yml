@@ -35,6 +35,7 @@ jobs:
         run: |
           pyinstaller --onedir --name LLM_Bundler_Desktop `
             --collect-all fitz `
+            --collect-all pymupdf `
             --collect-all faster_whisper `
             --collect-all cryptography `
             --hidden-import pytesseract `
