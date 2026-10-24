@@ -47,7 +47,7 @@ jobs:
             --add-data "storage;storage" `
             --add-data "encryption;encryption" `
             --add-data "integration;integration" `
-            --add-data "chatbot;chatbot" 
+            --add-data "chatbot;chatbot" `
             --add-data "PPLLM-main;PPLLM-main" `
             desktop_app.py
 
