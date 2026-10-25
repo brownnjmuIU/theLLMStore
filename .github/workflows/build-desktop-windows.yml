@@ -50,10 +50,12 @@ jobs:
             --add-data "chatbot;chatbot" `
             --add-data "PPLLM-main;PPLLM-main" `
             desktop_app.py
-
+      - name: Zip desktop app
+        shell: pwsh
+        run: Compress-Archive -Path dist/LLM_Bundler_Desktop -DestinationPath LLM_Bundler_Desktop_windows.zip
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: LLM_Bundler_Desktop_windows
-          path: dist/LLM_Bundler_Desktop
+          path: LLM_Bundler_Desktop_windows.zip
           retention-days: 30
